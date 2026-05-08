@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALGORİTMİK CİNSİYET</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;600;700&family=Nunito:wght@400;600;700&family=Oxanium:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #000;
+            --terminal-red: #ff3b3b;
+            --fg: #fff;
+            --accent: #e6c200;
+            --muted: rgba(255,255,255,.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+        html, body { max-width: 100vw; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--fg); 
+            font-family: 'Space Mono', monospace; 
+            overflow: hidden; 
+            height: 100vh; width: 100vw; 
+        }
+
+        .feed-container {
+            height: 100vh; width: 100vw; overflow-y: scroll;
+            scroll-snap-type: y mandatory; scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+        }
+        .feed-container::-webkit-scrollbar { display: none; }
+
+        .slide {
+            height: 100vh; width: 100vw; scroll-snap-align: start;
+            position: relative; display: flex; align-items: center; justify-content: center;
+            background: #000;
+        }
+
+        /* --- VIDEO ARKA PLAN --- */
+        .video-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 80%;
+            object-fit: contain;
+            z-index: 0;
+        }
+
+        /* --- ÜST TAB MENÜ --- */
+        .top-tabs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            z-index: 50;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+        }
+        .slide:not(.splash-slide) .top-tabs {
+            display: flex;
+        }
+        .tab-item {
+            padding: 8px 20px;
+            margin: 0 15px;
+            font-size: 1rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Oxanium', sans-serif;
+            font-weight: 600;
+        }
+        .tab-item:hover {
+            color: var(--fg);
+        }
+        .tab-item.active {
+            color: var(--fg);
+            font-weight: bold;
+        }
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 2px;
+            background: var(--fg);
+        }
+
+        /* --- 0. SAYFA: TERMİNAL GİRİŞ --- */
+        .splash-slide { background: #000; flex-direction: column; justify-content: center; padding: 60px 40px 120px 40px; gap: 20px; }
+        .terminal-header { font-size: 3.5rem; letter-spacing: 5px; margin-bottom: 80px; font-weight: normal; color: var(--fg); text-align: center; }
+        .terminal-logs { width: 100%; padding-left: 50px; font-size: 1.4rem; line-height: 2; opacity: 0.8; margin-bottom: 50px; }
+        .error-text { color: var(--terminal-red); }
+        .warning-box { border: 1px solid var(--terminal-red); padding: 20px 30px; max-width: 750px; text-align: center; color: var(--terminal-red); font-size: 1rem; text-transform: uppercase; margin: 0 auto; }
+        .swipe-hint { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0.7; animation: blink 1.5s infinite; font-size: 1.1rem; }
+        @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+        /* --- MOBİL RESPONSIVE --- */
+        @media (max-width: 768px) {
+            /* Ana sayfa */
+            .terminal-header { font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 20px; }
+            .terminal-logs { padding-left: 10px; font-size: 0.85rem; }
+            .warning-box { padding: 12px; font-size: 0.75rem; margin: 0 12px; }
+            .splash-slide { padding: 40px 16px 140px 16px; gap: 12px; }
+
+            /* Video sayfası */
+            .video-background { width: 100%; height: 100%; object-fit: cover; }
+            .interaction-rail { right: 8px; gap: 12px; bottom: 80px; }
+            .action-btn { width: 48px; height: 48px; }
+            .action-btn i { font-size: 16px; margin-bottom: 2px; }
+            .action-btn small { font-size: 0.55rem; }
+            .post-meta { left: 10px; bottom: 100px; max-width: calc(100% - 75px); }
+            .user-tag { font-size: 1rem; margin-bottom: 4px; }
+            .caption-text { font-size: 0.8rem; }
+            .bottom-analysis { padding: 6px 12px; font-size: 0.7rem; }
+            .top-tabs { top: 10px; }
+            .tab-item { padding: 4px 10px; margin: 0 4px; font-size: 0.75rem; }
+
+            /* Alt nav */
+            .simple-nav { gap: 0 !important; padding: 6px 4px !important; justify-content: space-around !important; }
+            .nav-btn { font-size: 0.5rem !important; min-width: 0 !important; width: 22% !important; text-align: center !important; gap: 3px !important; white-space: nowrap !important; }
+            .nav-btn i { font-size: 0.9rem !important; }
+
+            /* Keşfet */
+            #kesfetGrid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; padding: 0 10px; }
+            .kesfet-card div[style*="font-size: 1.1rem"] { font-size: 0.8rem !important; }
+            .kesfet-card div[style*="font-size: 0.8rem"] { font-size: 0.65rem !important; }
+            .kesfet-card div[style*="font-size: 0.75rem"] { font-size: 0.6rem !important; }
+            #kesfetView { padding: 0; }
+            #kesfetView h2 { font-size: 1.5rem !important; margin-bottom: 20px !important; }
+
+            /* Analiz sayfaları - mobilde dikey layout */
+            #analizPage > div[style*="display: flex"],
+            #analizPageGuzellik > div[style*="display: flex"],
+            #analizPageErkeklik > div[style*="display: flex"],
+            #analizPageEvNorm > div[style*="display: flex"],
+            #analizPageRolKaliplari > div[style*="display: flex"],
+            #analizPageMizah > div[style*="display: flex"] {
+                flex-direction: column !important;
+                height: auto !important;
+            }
+            #analizPage > div[style*="display: flex"] > div:first-child,
+            #analizPageGuzellik > div[style*="display: flex"] > div:first-child,
+            #analizPageErkeklik > div[style*="display: flex"] > div:first-child,
+            #analizPageEvNorm > div[style*="display: flex"] > div:first-child,
+            #analizPageRolKaliplari > div[style*="display: flex"] > div:first-child,
+            #analizPageMizah > div[style*="display: flex"] > div:first-child {
+                flex: none !important;
+                width: 100% !important;
+                height: 70vw !important;
+                padding-top: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            #analizPage video, #analizPageGuzellik video, #analizPageErkeklik video,
+            #analizPageEvNorm video, #analizPageRolKaliplari video, #analizPageMizah video {
+                width: auto !important;
+                height: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto;
+                display: block;
+            }
+            #analizPage > div[style*="display: flex"] > div:last-child,
+            #analizPageGuzellik > div[style*="display: flex"] > div:last-child,
+            #analizPageErkeklik > div[style*="display: flex"] > div:last-child,
+            #analizPageEvNorm > div[style*="display: flex"] > div:last-child,
+            #analizPageRolKaliplari > div[style*="display: flex"] > div:last-child,
+            #analizPageMizah > div[style*="display: flex"] > div:last-child {
+                flex: none !important;
+                width: 100% !important;
+                padding: 20px 16px !important;
+            }
+            #analizPage h2, #analizPageGuzellik h2, #analizPageErkeklik h2,
+            #analizPageEvNorm h2, #analizPageRolKaliplari h2, #analizPageMizah h2 {
+                font-size: 1.4rem !important;
+                margin-bottom: 20px !important;
+            }
+            #analizPage h3, #analizPageGuzellik h3, #analizPageErkeklik h3,
+            #analizPageEvNorm h3, #analizPageRolKaliplari h3, #analizPageMizah h3 {
+                font-size: 1rem !important;
+                margin-bottom: 10px !important;
+            }
+            #analizPage p, #analizPageGuzellik p, #analizPageErkeklik p,
+            #analizPageEvNorm p, #analizPageRolKaliplari p, #analizPageMizah p {
+                font-size: 0.85rem !important;
+                line-height: 1.6 !important;
+                text-align: left !important;
+            }
+            /* Profil sayfası */
+            #profileView .view-content { padding: 16px !important; }
+            #profileView p { font-size: 0.85rem !important; line-height: 1.6 !important; }
+            #profileView h3 { font-size: 1.1rem !important; }
+            #profileView h2 { font-size: 1.3rem !important; }
+
+            /* Yazı hizalama düzelt */
+            p { text-align: left !important; }
+
+            /* İletişim sayfası */
+            #contactView .view-content { padding: 16px !important; }
+            #contactView h2 { font-size: 1.4rem !important; }
+            #contactView a, #contactView div[style*="display: flex; align-items: center"] { padding: 12px !important; margin-bottom: 16px !important; }
+            #contactView div[style*="font-size: 1.25rem"] { font-size: 0.95rem !important; }
+            #contactView div[style*="font-size: 0.95rem"] { font-size: 0.75rem !important; }
+            #contactView i[style*="font-size: 2rem"] { font-size: 1.4rem !important; min-width: 30px !important; }
+            #analizPage .view-back, #analizPageGuzellik .view-back,
+            #analizPageErkeklik .view-back, #analizPageEvNorm .view-back,
+            #analizPageRolKaliplari .view-back, #analizPageMizah .view-back {
+                position: absolute !important;
+                top: 10px !important;
+                left: 10px !important;
+                z-index: 9999 !important;
+                background: rgba(0,0,0,0.85) !important;
+                padding: 8px 12px !important;
+                border-radius: 4px !important;
+                font-size: 1rem !important;
+            }
+            #analizPage > div[style*="display: flex"] > div:first-child,
+            #analizPageGuzellik > div[style*="display: flex"] > div:first-child,
+            #analizPageErkeklik > div[style*="display: flex"] > div:first-child,
+            #analizPageEvNorm > div[style*="display: flex"] > div:first-child,
+            #analizPageRolKaliplari > div[style*="display: flex"] > div:first-child,
+            #analizPageMizah > div[style*="display: flex"] > div:first-child {
+                padding-top: 70px !important;
+                justify-content: center !important;
+                align-items: center !important;
+                width: 100% !important;
+            }
+
+            /* Portfolyo */
+            .hub-filter-bar { padding: 10px 0 10px 12px !important; flex-wrap: nowrap !important; gap: 4px !important; overflow-x: auto; justify-content: flex-start !important; }
+            .hub-filter-btn { padding: 5px 8px !important; font-size: 0.6rem !important; flex-shrink: 0; white-space: nowrap; }
+            /* Instagram */
+            #instaContainer div[style*="min-width"] { min-width: calc(50vw - 20px) !important; max-width: calc(50vw - 20px) !important; }
+            #portfolyoView a[style*="width:220px"] { width: 140px !important; min-width: 140px !important; flex-shrink: 0 !important; }
+            #reelsContainer { scrollbar-width: thin !important; scrollbar-color: #e6c200 #333 !important; }
+            #reelsContainer::-webkit-scrollbar { height: 6px !important; display: block !important; }
+            #reelsContainer::-webkit-scrollbar-track { background: #333 !important; border-radius: 3px !important; }
+            #reelsContainer::-webkit-scrollbar-thumb { background: #e6c200 !important; border-radius: 3px !important; }
+            .hub-filter-label { display: none; }
+            .hub-section { padding: 24px 14px; }
+            .hub-section-title { font-size: 1.1rem; }
+            .hub-video-grid { grid-template-columns: 1fr !important; }
+            .hub-blog-item { grid-template-columns: 1fr !important; gap: 10px; }
+            .hub-blog-date { font-size: 0.7rem; }
+            .hub-blog-item h3 { font-size: 1rem; }
+            .hub-blog-excerpt { font-size: 0.85rem; }
+            .hub-read-more { font-size: 0.7rem; }
+        }
+
+        /* --- İÇERİK SAYFALARI --- */
+        .bg-overlay { 
+            position: absolute; 
+            inset: 0; 
+            z-index: 1; 
+            background: rgba(0,0,0,0.4);
+        }
+        .theme-beauty { background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(255,212,0,0.2)); }
+        .theme-masc { background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(140,92,255,0.2)); }
+        .theme-home { background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(255,255,255,0.15)); }
+        .content-center { z-index: 2; text-align: center; pointer-events: none; }
+        .video-mock-text { font-size: 4.5rem; font-weight: bold; opacity: 0.15; line-height: 1; }
+
+        .interaction-rail { 
+            position: absolute; 
+            right: 50px; 
+            top: 50%; 
+            transform: translateY(-50%);
+            z-index: 10; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+        }
+        .action-btn { 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.12); 
+            width: 90px; 
+            height: 90px; 
+            border-radius: 50%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+        .action-btn i { 
+            font-size: 28px; 
+            margin-bottom: 6px; 
+        }
+        .action-btn small {
+            font-size: 0.75rem;
+        }
+        .action-btn:hover { 
+            background: rgba(255,255,255,0.15); 
+            transform: scale(1.05); 
+        }
+
+        .post-meta { 
+            position: absolute; 
+            left: 50px; 
+            bottom: 140px; 
+            z-index: 10; 
+            max-width: 550px;
+        }
+        .user-tag { 
+            font-weight: bold; 
+            font-size: 1.8rem; 
+            margin-bottom: 12px; 
+            display: block; 
+            color: var(--accent); 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .caption-text { 
+            font-size: 1.2rem; 
+            color: var(--fg); 
+            line-height: 1.4; 
+            opacity: 0.95; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- OVERLAY SAYFALAR --- */
+        .overlay-view { position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto; overflow-x: hidden; max-width: 100vw; }
+        .overlay-view.active { transform: translateX(0); }
+        .view-back { padding: 30px; font-size: 1.5rem; cursor: pointer; color: var(--accent); }
+        .view-content { display: flex; flex-direction: column; align-items: center; padding: 40px; text-align: center; }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 15px; background-size: cover; background-position: center; background-color: #111; background-image: url('https://i.ibb.co/0VVQ99Jd/Gemini-Generated-mage-jpg.png'); }
+        .profile-username { color: var(--accent); font-size: 1.4rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 20px; }
+
+        /* --- ALT ANALİZ VE BUTONLAR --- */
+        .bottom-analysis { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); z-index: 100; padding: 10px 50px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .meter-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .progress-track { width: 100%; height: 8px; background: #1a1a1a; border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #8c5cff); transition: 0.6s ease; }
+        .simple-nav { display: flex; justify-content: center; gap: 40px; padding-bottom: 10px; padding-top: 5px; }
+        .nav-btn { color: var(--muted); text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 80px; }
+        .nav-btn i { font-size: 1.2rem; }
+        .nav-btn:hover { color: var(--accent); }
+
+        .jam-toast { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 18px 40px; border-radius: 50px; backdrop-filter: blur(15px); z-index: 3000; display: none; text-align: center; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 4000; align-items: center; justify-content: center; }
+        .modal-card { background: #0a0a0a; padding: 40px; border-radius: 4px; width: 480px; border: 1px solid var(--accent); }
+        textarea { width: 100%; height: 140px; background: #000; color: var(--accent); border: 1px solid #333; padding: 15px; font-family: 'Space Mono', monospace; outline: none; margin-bottom: 20px; resize: none; }
+        .btn { padding: 10px 20px; border: 1px solid var(--accent); cursor: pointer; font-family: 'Space Mono', monospace; background: transparent; color: var(--accent); }
+        .btn-send { background: var(--accent); color: #000; }
+        .liked { color: #ff2c55 !important; border-color: #ff2c55 !important; }
+    </style>
+    <script async src="//www.instagram.com/embed.js"></script>
+</head>
+<body>
+
+    <div class="jam-toast" id="overlay"><div id="overlayText"></div></div>
+
+    <div id="profileView" class="overlay-view">
+        <div class="view-back" onclick="toggleView('profileView', false)"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div class="view-content" style="padding-top: 10px;">
+            <img src="https://i.ibb.co/0VVQ99Jd/Gemini-Generated-mage-jpg.png" style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 15px; object-fit: cover;">
+            <div class="profile-username">@algoritmikcinsiyet</div>
+            
+            <div style="max-width: 900px; text-align: left; margin-top: 30px; margin-left: auto; margin-right: auto;">
+                
+                <div style="margin-bottom: 40px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.6rem; margin-bottom: 18px; letter-spacing: 1px; font-family: 'Space Mono', monospace;">> PROJE KÜNYESİ</h3>
+                    <p style="line-height: 1.9; opacity: 0.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; text-align: justify;">
+                        Algoritmik Cinsiyet, kısa video platformlarının işleyiş biçiminin, genç yetişkinlerin toplumsal rollerine dair görüşlerini nasıl etkilediğini inceleyen bir araştırma projesidir. Yaşar Üniversitesi Yeni Medya ve İletişim Bölümü kapsamında yürütülen çalışma; dijital dünyada yaygınlaşan "geleneksel ev hanımlığı" ve "ideal erkeklik" gibi akımların, bireylerin öz saygısı ve beklentileri üzerindeki etkisine odaklanmaktadır. Dr. Mert Seven ve Dr. Simge Gökbayrak Yelken danışmanlığında hazırlanan proje, dijital dünyadaki temsiller konusunda toplumsal bir farkındalık yaratmayı amaçlamaktadır.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 40px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.6rem; margin-bottom: 18px; letter-spacing: 1px; font-family: 'Space Mono', monospace;">> İZMİR KENT KONSEYİ KADIN MECLİSİ</h3>
+                    <p style="line-height: 1.9; opacity: 0.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; text-align: justify;">
+                        İzmir Kent Konseyi Kadın Meclisi, İzmir'de kadınların kent yaşamına aktif katılımını sağlamak, toplumsal cinsiyet eşitliğini savunmak ve kadın hakları odaklı yerel politikalar üretmek amacıyla çalışan demokratik bir yapıdır. Bu proje kapsamında İzmir Kent Konseyi Kadın Meclisi, akademik bulguların sivil toplum nezdinde karşılık bulması, farkındalık çalışmalarının yaygınlaştırılması ve dijital dünyadaki cinsiyet temsillerinin kadın hakları perspektifinden değerlendirilmesi konularında değerli bir paydaşlık sunmaktadır.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 40px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.6rem; margin-bottom: 18px; letter-spacing: 1px; font-family: 'Space Mono', monospace;">> PROJEYİ HAZIRLAYAN EKİP</h3>
+                    <p style="line-height: 1.9; opacity: 0.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; text-align: justify;">
+                        Yaşar Üniversitesi Yeni Medya ve İletişim Bölümü son sınıf öğrencisi Simten Karaosmanoğlu tarafından yürütülen bu proje; dijital kültürün toplumsal etkileri, yeni medya okuryazarlığı ve dijital mecralardaki kimlik inşası üzerine odaklanmaktadır. Dr. Mert Seven ve Dr. Simge Gökbayrak Yelken'in danışmanlığında hazırlanan çalışma, İzmir Kent Konseyi Kadın Meclisi iş birliğiyle hayata geçirilmektedir. Akademik verileri toplumsal farkındalıkla buluşturmayı hedefleyen ekip, dijital platformlardaki kalıplaşmış yargıları sorgulayarak toplumsal cinsiyet eşitliği perspektifinden yeni bir bakış açısı sunmayı amaçlamaktadır.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- AKIŞINI DÜZENLE Sayfası -->
+    <div id="akisGuideView" class="overlay-view">
+        <div class="view-back" onclick="toggleView('akisGuideView', false)"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div class="view-content" style="padding-top: 10px;">
+            <h2 style="color: var(--accent); margin-bottom: 50px; font-size: 2.2rem; letter-spacing: 2px; font-family: 'Oxanium', sans-serif; font-weight: 700;">AKIŞINI DÜZENLE</h2>
+            
+            <div style="max-width: 900px; text-align: left; margin: 0 auto;">
+                
+                <!-- 1. HIZLA KAYDIR -->
+                <div style="margin-bottom: 45px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 18px; font-family: 'Space Mono', monospace;">1. HIZLA KAYDIR</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.95; text-align: justify;">
+                        İlgi duymadığın içerikte bir saniye bile durma. Duraklamadığın her içerik, sistemin seni tanıma yeteneğini zayıflatır.
+                    </p>
+                </div>
+
+                <!-- 2. İLGİLENMİYORUM DE -->
+                <div style="margin-bottom: 45px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 18px; font-family: 'Space Mono', monospace;">2. "İLGİLENMİYORUM" DE</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.95; text-align: justify;">
+                        Sisteme doğrudan komut ver. Bu seçeneği kullanarak algoritmanın sana sunduğu kalıpları reddet.
+                    </p>
+                </div>
+
+                <!-- 3. HAFIZAYI SİL -->
+                <div style="margin-bottom: 45px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 18px; font-family: 'Space Mono', monospace;">3. HAFIZAYI SİL</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.95; text-align: justify;">
+                        Arama ve reklam geçmişini düzenli olarak sıfırla. Sistemin seni geçmişteki verilerinle etiketlemesine izin verme.
+                    </p>
+                </div>
+
+                <!-- 4. YANKI ODASINI BOZ -->
+                <div style="margin-bottom: 45px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 18px; font-family: 'Space Mono', monospace;">4. YANKI ODASINI BOZ</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.95; text-align: justify;">
+                        Sürekli karşına çıkan içeriklerin dışına çık. Farklı ve alakasız konuları takip ederek sistemin çizdiği profili karıştır.
+                    </p>
+                </div>
+
+                <!-- 5. EKRANDAN ÇIK -->
+                <div style="margin-bottom: 45px; padding: 30px; background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 18px; font-family: 'Space Mono', monospace;">5. EKRANDAN ÇIK</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.95; text-align: justify;">
+                        Algoritmanın sunduğu dünya filtrelenmiş bir kurgudur. Dijital manipülasyondan kurtulmak için gerçek dünyaya odaklan.
+                    </p>
+                </div>
+
+                <!-- SLOGAN -->
+                <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
+                    <h2 style="color: var(--accent); font-size: 2rem; letter-spacing: 3px; font-family: 'Oxanium', sans-serif; font-weight: 700; text-transform: uppercase;">
+                        AKIŞIN SENİ TANIMLAMASINA İZİN VERME
+                    </h2>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="kesfetView" class="overlay-view">
+        <div class="view-back" onclick="toggleView('kesfetView', false)"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div class="view-content" style="padding-top: 10px;">
+            <h2 style="color: var(--accent); margin-bottom: 40px; font-size: 2rem; letter-spacing: 2px; font-family: 'Oxanium', sans-serif; font-weight: 700;">KEŞFET</h2>
+            <div id="kesfetGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 900px; margin: 0 auto;">
+                
+                <div class="kesfet-card" onclick="openAnalizPageGuzellik()" style="aspect-ratio: 9/16; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #000;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <video autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250467/g%C3%BCzellik_wsdy6j.mp4" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; z-index: 1;">
+                        <i class="fas fa-play" style="margin-right: 5px;"></i>2.4M
+                    </div>
+                    <div style="position: relative; z-index: 1; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Güzellik Söylemi</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Standartlar & Beklentiler</div>
+                    </div>
+                </div>
+
+                <div class="kesfet-card" onclick="openAnalizPageErkeklik()" style="aspect-ratio: 9/16; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #000;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <video autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250468/erkeklik_el3tsw.mp4" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; z-index: 1;">
+                        <i class="fas fa-play" style="margin-right: 5px;"></i>3.1M
+                    </div>
+                    <div style="position: relative; z-index: 1; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Hiper-Maskülenite</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Erkeklik & Güç</div>
+                    </div>
+                </div>
+
+                <div class="kesfet-card" onclick="openAnalizPageEvNorm()" style="aspect-ratio: 9/16; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #000;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <video autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250468/ev-norm_w7mvx4.mp4" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; z-index: 1;">
+                        <i class="fas fa-play" style="margin-right: 5px;"></i>1.8M
+                    </div>
+                    <div style="position: relative; z-index: 1; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Ev İçi Normlar</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Geleneksel Roller</div>
+                    </div>
+                </div>
+
+                <div class="kesfet-card" onclick="openAnalizPage()" style="aspect-ratio: 9/16; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #000;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <video autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250481/nesnele%C5%9Ftirme_guyahy.mp4" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; z-index: 1;">
+                        <i class="fas fa-play" style="margin-right: 5px;"></i>2.9M
+                    </div>
+                    <div style="position: relative; z-index: 1; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Nesneleştirme</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Temsil & Algı</div>
+                    </div>
+                </div>
+
+                <div class="kesfet-card" onclick="openAnalizPageRolKaliplari()" style="aspect-ratio: 9/16; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #000;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <video autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250480/rol_kaliplari_sstvcd.mp4" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; z-index: 1;">
+                        <i class="fas fa-play" style="margin-right: 5px;"></i>1.5M
+                    </div>
+                    <div style="position: relative; z-index: 1; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Rol Kalıpları</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Beklenti & Davranış</div>
+                    </div>
+                </div>
+
+                <div class="kesfet-card" onclick="openAnalizPageMizah()" style="aspect-ratio: 9/16; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #000;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <video autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250497/mizah_jjtarw.mp4" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; z-index: 1;">
+                        <i class="fas fa-play" style="margin-right: 5px;"></i>2.2M
+                    </div>
+                    <div style="position: relative; z-index: 1; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Cinsiyetçi Mizah</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Normalleştirme</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="portfolyoView" class="overlay-view">
+        <div class="view-back" onclick="toggleView('portfolyoView', false)"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+
+        <style>
+            #portfolyoView {
+                font-family: 'Space Mono', monospace;
+            }
+            .hub-filter-bar {
+                padding: 20px 50px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                position: sticky;
+                top: 0;
+                background: #000;
+                z-index: 10;
+            }
+            .hub-filter-label {
+                font-size: 0.7rem;
+                color: rgba(255,255,255,0.4);
+                letter-spacing: 0.1em;
+                margin-right: 12px;
+                text-transform: uppercase;
+            }
+            .hub-filter-btn {
+                padding: 10px 24px;
+                border: 1px solid rgba(255,255,255,0.2);
+                background: transparent;
+                color: rgba(255,255,255,0.5);
+                font-family: 'Space Mono', monospace;
+                font-size: 1rem;
+                cursor: pointer;
+                border-radius: 2px;
+                transition: all 0.2s ease;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+            .hub-filter-btn:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .hub-filter-btn.active {
+                background: var(--accent);
+                color: #000;
+                border-color: var(--accent);
+            }
+            .hub-section {
+                padding: 50px;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+            }
+            .hub-section:last-child { border-bottom: none; }
+            .hub-section-header {
+                display: flex;
+                align-items: baseline;
+                gap: 16px;
+                margin-bottom: 32px;
+            }
+            .hub-section-title {
+                font-size: 1.4rem;
+                color: var(--fg);
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+            .hub-section-title span { color: var(--accent); }
+            .hub-section-count {
+                font-size: 0.7rem;
+                color: rgba(255,255,255,0.35);
+                letter-spacing: 0.06em;
+            }
+            .hub-line {
+                flex: 1;
+                height: 1px;
+                background: rgba(255,255,255,0.08);
+            }
+            /* Video Grid */
+            .hub-video-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+            .hub-reels-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 16px;
+            }
+            .hub-video-card {
+                background: #0a0a0a;
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 3px;
+                overflow: hidden;
+                transition: transform 0.25s ease, border-color 0.25s ease;
+                cursor: pointer;
+                text-decoration: none;
+                display: block;
+            }
+            .hub-video-card:hover {
+                transform: translateY(-3px);
+                border-color: var(--accent);
+            }
+            .hub-video-thumb {
+                position: relative;
+                overflow: hidden;
+                background: #111;
+            }
+            .hub-video-thumb.horizontal { aspect-ratio: 16/9; }
+            .hub-video-thumb.vertical { aspect-ratio: 9/16; }
+            .hub-video-thumb img {
+                width: 100%; height: 100%; object-fit: cover;
+                transition: transform 0.4s ease;
+            }
+            .hub-video-card:hover .hub-video-thumb img { transform: scale(1.04); }
+            .hub-play-overlay {
+                position: absolute; inset: 0;
+                background: rgba(0,0,0,0);
+                display: flex; align-items: center; justify-content: center;
+                transition: background 0.3s ease;
+            }
+            .hub-video-card:hover .hub-play-overlay { background: rgba(0,0,0,0.4); }
+            .hub-play-icon {
+                width: 44px; height: 44px;
+                border: 2px solid rgba(255,255,255,0.9);
+                border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                opacity: 0; transform: scale(0.8);
+                transition: all 0.3s ease;
+            }
+            .hub-play-icon::after {
+                content: '';
+                border-left: 13px solid white;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                margin-left: 3px;
+            }
+            .hub-video-card:hover .hub-play-icon { opacity: 1; transform: scale(1); }
+            .hub-platform-badge {
+                position: absolute; top: 10px; left: 10px;
+                background: rgba(0,0,0,0.75);
+                color: rgba(255,255,255,0.8);
+                font-size: 0.6rem; letter-spacing: 0.08em;
+                padding: 3px 8px; border-radius: 2px;
+                text-transform: uppercase;
+            }
+            .hub-video-info { padding: 12px 14px 16px; }
+            .hub-video-info h3 { font-size: 0.85rem; color: var(--fg); line-height: 1.4; margin-bottom: 5px; font-weight: normal; }
+            .hub-video-meta { font-size: 0.65rem; color: rgba(255,255,255,0.35); letter-spacing: 0.04em; }
+            /* Instagram */
+            .hub-insta-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 14px;
+            }
+            .hub-insta-card {
+                aspect-ratio: 1; overflow: hidden; border-radius: 2px;
+                position: relative; cursor: pointer;
+                border: 1px solid rgba(255,255,255,0.06);
+            }
+            .hub-insta-card:hover { border-color: var(--accent); }
+            .hub-insta-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+            .hub-insta-card:hover img { transform: scale(1.06); }
+            .hub-insta-hover {
+                position: absolute; inset: 0;
+                background: rgba(0,0,0,0);
+                display: flex; flex-direction: column;
+                align-items: center; justify-content: center; gap: 8px;
+                transition: background 0.3s ease;
+            }
+            .hub-insta-card:hover .hub-insta-hover { background: rgba(0,0,0,0.6); }
+            .hub-insta-stats {
+                display: flex; gap: 16px;
+                opacity: 0; transform: translateY(6px);
+                transition: all 0.3s ease;
+                color: white; font-size: 0.75rem; letter-spacing: 0.04em;
+            }
+            .hub-insta-card:hover .hub-insta-stats { opacity: 1; transform: translateY(0); }
+            .hub-insta-caption {
+                opacity: 0; transform: translateY(6px);
+                transition: all 0.3s ease 0.05s;
+                color: rgba(255,255,255,0.75); font-size: 0.7rem;
+                text-align: center; padding: 0 12px; line-height: 1.4;
+                font-family: 'Inter', sans-serif;
+            }
+            .hub-insta-card:hover .hub-insta-caption { opacity: 1; transform: translateY(0); }
+            /* Blog */
+            .hub-blog-item {
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                gap: 36px;
+                padding: 36px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.07);
+                position: relative;
+            }
+            .hub-blog-item:first-child { padding-top: 0; }
+            .hub-blog-item:last-child { border-bottom: none; }
+            .hub-blog-item::before {
+                content: '';
+                position: absolute; left: -50px; top: 0; bottom: 0;
+                width: 2px; background: var(--accent);
+                transform: scaleY(0); transform-origin: top;
+                transition: transform 0.3s ease;
+            }
+            .hub-blog-item:hover::before { transform: scaleY(1); }
+            .hub-blog-date {
+                font-size: 0.7rem; color: rgba(255,255,255,0.35);
+                letter-spacing: 0.06em; padding-top: 4px; line-height: 1.8;
+            }
+            .hub-blog-date span { color: var(--accent); }
+            .hub-blog-tags { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+            .hub-tag {
+                background: rgba(255,255,255,0.06);
+                color: rgba(255,255,255,0.4);
+                font-size: 0.6rem; letter-spacing: 0.08em;
+                padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
+            }
+            .hub-blog-item h3 {
+                font-size: 1.3rem; font-weight: normal;
+                line-height: 1.4; letter-spacing: 0.5px;
+                margin-bottom: 10px; color: var(--fg);
+                transition: color 0.2s ease;
+            }
+            .hub-blog-item:hover h3 { color: var(--accent); }
+            .hub-blog-excerpt {
+                color: rgba(255,255,255,0.5);
+                font-size: 1rem; line-height: 1.7;
+                font-family: 'Inter', sans-serif; font-weight: 300;
+            }
+            .hub-read-more {
+                display: inline-flex; align-items: center; gap: 8px;
+                margin-top: 16px; font-size: 0.7rem;
+                letter-spacing: 0.1em; color: var(--accent);
+                text-decoration: none; border-bottom: 1px solid var(--accent);
+                padding-bottom: 2px; text-transform: uppercase;
+                transition: gap 0.2s ease;
+            }
+            .hub-read-more:hover { gap: 14px; }
+            .hub-read-more::after { content: '→'; }
+            .hub-content-section.hidden { display: none; }
+            /* Thumb placeholder */
+            .hub-thumb-ph {
+                width: 100%; height: 100%;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 0.6rem; color: rgba(255,255,255,0.2); letter-spacing: 0.06em;
+            }
+        </style>
+
+        <!-- Filtre Menüsü -->
+        <nav class="hub-filter-bar">
+            <span class="hub-filter-label">Filtre:</span>
+            <button class="hub-filter-btn active" onclick="hubFilter('hepsi', this); document.getElementById('portfolyoView').scrollTo({top:0, behavior:'smooth'})">Hepsi</button>
+            <button class="hub-filter-btn" onclick="hubFilter('video', this); scrollToSection('hub-youtube')">Videolar</button>
+            <button class="hub-filter-btn" onclick="hubFilter('yazi', this)">Blog Yazıları</button>
+            <button class="hub-filter-btn" onclick="hubFilter('sosyal', this); scrollToSection('hub-instagram')">Sosyal Medya</button>
+        </nav>
+
+        <!-- YouTube -->
+        <div id="hub-youtube" class="hub-section hub-content-section" data-hubcat="video">
+            <div class="hub-section-header">
+                <h2 class="hub-section-title"><span>></span> YouTube</h2>
+                <span class="hub-section-count">03 video</span>
+                <div class="hub-line"></div>
+            </div>
+            <div class="hub-video-grid">
+                <a href="https://youtu.be/zCqnrTP5tpc" target="_blank" class="hub-video-card">
+                    <div class="hub-video-thumb horizontal">
+                        <img src="https://img.youtube.com/vi/zCqnrTP5tpc/maxresdefault.jpg" alt="Algoritmalar, Kimlik ve Dijital Temsiller" style="width:100%;height:100%;object-fit:cover;">
+                        <div class="hub-play-overlay"><div class="hub-play-icon"></div></div>
+                        <span class="hub-platform-badge">YouTube</span>
+                    </div>
+                    <div class="hub-video-info">
+                        <h3>Algoritmalar, Kimlik ve Dijital Temsiller</h3>
+                        
+                    </div>
+                </a>
+                <a href="https://youtu.be/Eo75TCy_Q7w" target="_blank" class="hub-video-card">
+                    <div class="hub-video-thumb horizontal">
+                        <img src="https://img.youtube.com/vi/Eo75TCy_Q7w/maxresdefault.jpg" alt="Filtreli Gerçeklik: Görünürlük ve Algoritmalar" style="width:100%;height:100%;object-fit:cover;">
+                        <div class="hub-play-overlay"><div class="hub-play-icon"></div></div>
+                        <span class="hub-platform-badge">YouTube</span>
+                    </div>
+                    <div class="hub-video-info">
+                        <h3>Filtreli Gerçeklik: Görünürlük ve Algoritmalar</h3>
+                        
+                    </div>
+                </a>
+                <a href="https://youtu.be/fbeMiIznKRY" target="_blank" class="hub-video-card">
+                    <div class="hub-video-thumb horizontal">
+                        <img src="https://img.youtube.com/vi/fbeMiIznKRY/hqdefault.jpg" alt="Dijital Temsiller: Beden Algısı ve Toplumsal Cinsiyet" style="width:100%;height:100%;object-fit:cover;">
+                        <div class="hub-play-overlay"><div class="hub-play-icon"></div></div>
+                        <span class="hub-platform-badge">YouTube</span>
+                    </div>
+                    <div class="hub-video-info">
+                        <h3>Dijital Temsiller: Beden Algısı ve Toplumsal Cinsiyet</h3>
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Reels -->
+        <div class="hub-section hub-content-section" data-hubcat="video sosyal">
+            <div class="hub-section-header">
+                <h2 class="hub-section-title"><span>></span> Reels</h2>
+                <span class="hub-section-count">04 reels</span>
+                <span class="reels-swipe-hint" style="font-family:'Space Mono',monospace; font-size:0.85rem; color:var(--accent); letter-spacing:0.05em; margin-left:auto;">kaydır →</span>
+                <div class="hub-line"></div>
+            </div>
+            <div id="reelsContainer" style="display:flex; gap:20px; overflow-x:auto; padding-bottom:12px; scrollbar-width:thin; scrollbar-color:#e6c200 #333;" onscroll="updateReelsProgress(this)">
+                <a href="https://www.instagram.com/reel/DYAVkR2IbMM/" target="_blank" style="text-decoration:none; width:220px; flex-shrink:0;">
+                    <div style="aspect-ratio:9/16; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); position:relative;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                        <video id="reels1" loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;">
+                            <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250546/trendol_ptwdt8.mp4" type="video/mp4">
+                        </video>
+                        
+                    </div>
+                </a>
+                <a href="https://www.instagram.com/reel/DYCRYtlI4GI/" target="_blank" style="text-decoration:none; width:220px; flex-shrink:0;">
+                    <div style="aspect-ratio:9/16; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); position:relative;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                        <video id="reels2" loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;">
+                            <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250494/ikikayd%C4%B1rma_ibyuws.mp4" type="video/mp4">
+                        </video>
+                        
+                    </div>
+                </a>
+                <a href="https://www.instagram.com/reel/DX_pf-1NtVr/" target="_blank" style="text-decoration:none; width:220px; flex-shrink:0;">
+                    <div style="aspect-ratio:9/16; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); position:relative;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                        <video id="reels3" loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;">
+                            <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250556/begeni_kzwxme.mp4" type="video/mp4">
+                        </video>
+                        
+                    </div>
+                </a>
+                <a href="https://www.instagram.com/reel/DYExGadNFJU/" target="_blank" style="text-decoration:none; width:220px; flex-shrink:0;">
+                    <div style="aspect-ratio:9/16; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); position:relative;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                        <video id="reels4" loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;">
+                            <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250505/izlemek_nofxeg.mp4" type="video/mp4">
+                        </video>
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+        <script>
+            function playReelsVideos() {
+                ['reels1','reels2','reels3','reels4'].forEach(id => {
+                    const v = document.getElementById(id);
+                    if (v) { v.muted = true; v.play().catch(() => {}); }
+                });
+            }
+            document.addEventListener('DOMContentLoaded', playReelsVideos);
+            document.addEventListener('click', playReelsVideos, { once: true });
+            setTimeout(playReelsVideos, 500);
+        </script>
+
+        <!-- Instagram Postları -->
+        <div id="hub-instagram" class="hub-section hub-content-section" data-hubcat="sosyal">
+            <div class="hub-section-header" style="flex-wrap:nowrap; align-items:center;">
+                <h2 class="hub-section-title" style="white-space:nowrap;"><span>></span> Instagram</h2>
+                <span class="hub-section-count" style="white-space:nowrap; margin-left:8px;">05 post</span>
+                <div class="hub-line"></div>
+                <span style="font-family:'Space Mono',monospace; font-size:0.85rem; color:var(--accent); letter-spacing:0.05em; white-space:nowrap; margin-left:8px;">kaydır →</span>
+            </div>
+            <div id="instaContainer" style="display:flex; gap:20px; overflow-x:auto; padding-bottom:16px; padding-left:4px; scrollbar-width:thin; scrollbar-color:var(--accent) #222;">
+                <div style="min-width:240px; max-width:240px; flex-shrink:0;">
+                    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DV_g1mSDYhs/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:0; max-width:100%; min-width:0 !important; padding:0; width:100%;"></blockquote>
+                </div>
+                <div style="min-width:240px; max-width:240px; flex-shrink:0;">
+                    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DWCJK9CDXbp/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:0; max-width:100%; min-width:0 !important; padding:0; width:100%;"></blockquote>
+                </div>
+                <div style="min-width:240px; max-width:240px; flex-shrink:0;">
+                    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DWHTw-BDUcJ/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:0; max-width:100%; min-width:0 !important; padding:0; width:100%;"></blockquote>
+                </div>
+                <div style="min-width:240px; max-width:240px; flex-shrink:0;">
+                    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DWLmpPEDWFw/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:0; max-width:100%; min-width:0 !important; padding:0; width:100%;"></blockquote>
+                </div>
+                <div style="min-width:240px; max-width:240px; flex-shrink:0;">
+                    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DWNJPKSDKBI/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:0; max-width:100%; min-width:0 !important; padding:0; width:100%;"></blockquote>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Blogları -->
+        <div class="hub-section hub-content-section" data-hubcat="yazi">
+            <div class="hub-section-header">
+                <h2 class="hub-section-title"><span>></span> Blog Yazıları</h2>
+                <span class="hub-section-count"></span>
+                <div class="hub-line"></div>
+            </div>
+            <div>
+                <article class="hub-blog-item">
+                    <div class="hub-blog-date">2026<br><span>— 01</span></div>
+                    <div>
+                        <div class="hub-blog-tags"><span class="hub-tag">Dijital Kültür</span><span class="hub-tag">Kimlik</span><span class="hub-tag">Sosyal Medya</span></div>
+                        <h3>Romantize Edilmiş Günlük Hayat: Dijital Kültürde İdeal Yaşamın İnşası</h3>
+                        <p class="hub-blog-excerpt">Sosyal medyada gündelik hayat çoğu zaman gerçeklikten çok bir estetik meselesi gibi görünür. Düzenli bir masa, sakin bir sabah ve verimli bir gün… Bu görüntüler yalnızca bir rutini değil, aynı zamanda ideal bir yaşam fikrini temsil eder. Peki bu temsiller bireysel tercihler mi, yoksa güçlü bir çerçeve mi oluşturuyor?</p>
+                        <a href="blog1.html" target="_blank" class="hub-read-more">Devamını Oku</a>
+                    </div>
+                </article>
+                <article class="hub-blog-item">
+                    <div class="hub-blog-date">2026<br><span>— 02</span></div>
+                    <div>
+                        <div class="hub-blog-tags"><span class="hub-tag">Sonsuz Kaydırma</span><span class="hub-tag">Dikkat Ekonomisi</span><span class="hub-tag">Tasarım</span></div>
+                        <h3>Akışın İçinde Kaybolmak: Sonsuz Kaydırma Deneyimi</h3>
+                        <p class="hub-blog-excerpt">Kısa video platformlarında zaman çoğu zaman fark edilmeden akıp gider. "Sadece biraz bakacağım" dediğimiz anların nasıl bir saate uzadığını fark etmek zor olabilir. Sonsuz kaydırma yalnızca teknik bir özellik değil; zamanla kurduğumuz ilişkiyi de değiştiren bir deneyimdir.</p>
+                        <a href="blog2.html" target="_blank" class="hub-read-more">Devamını Oku</a>
+                    </div>
+                </article>
+                <article class="hub-blog-item">
+                    <div class="hub-blog-date">2026<br><span>— 03</span></div>
+                    <div>
+                        <div class="hub-blog-tags"><span class="hub-tag">Beğeni Kültürü</span><span class="hub-tag">Sosyal Onay</span><span class="hub-tag">Algoritmalar</span></div>
+                        <h3>Sayılarla Ölçülen Değer: Beğeni Kültürü ve Sosyal Onay Mekanizmaları</h3>
+                        <p class="hub-blog-excerpt">Kısa video platformlarında içeriklerle karşılaşma biçimimiz oldukça hızlıdır. Beğeni, yorum ve görüntülenme sayıları bu süreçte önemli bir rol oynar. Peki sosyal medyada görünen sayılar yalnızca popülerliği mi temsil eder, yoksa değer algısının nasıl oluştuğunu da mu gösterir?</p>
+                        <a href="blog3.html" target="_blank" class="hub-read-more">Devamını Oku</a>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+
+        <!-- Blog Overlay 1 -->
+        <div id="blogView1" style="display:none; position:fixed; inset:0; background:#000; z-index:3000; overflow-y:auto;">
+            <div style="padding:30px 50px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:20px; position:sticky; top:0; background:#000; z-index:10;">
+                <span onclick="closeBlog('blogView1')" style="color:var(--accent); cursor:pointer; font-size:1.3rem;"><i class="fas fa-arrow-left"></i> GERİ DÖN</span>
+            </div>
+            <div style="max-width:780px; margin:0 auto; padding:60px 40px; font-family:'Inter',sans-serif; line-height:1.9; font-size:1.05rem; color:rgba(255,255,255,0.85);">
+                <h1 style="font-family:'Share Tech Mono',monospace; font-size:1.8rem; color:#fff; margin-bottom:12px; line-height:1.3; font-weight:normal;">Romantize Edilmiş Günlük Hayat: Dijital Kültürde İdeal Yaşamın İnşası</h1>
+                <div style="font-size:0.75rem; color:var(--accent); letter-spacing:0.1em; margin-bottom:40px; text-transform:uppercase;">2025 · Dijital Kültür · Kimlik · Sosyal Medya</div>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Giriş: Belki de Sorun Günlük Hayatın Kendisi Değil, Nasıl Göründüğü</h2>
+                <p>Sosyal medyada gündelik hayat çoğu zaman gerçeklikten çok bir estetik meselesi gibi görünür. Düzenli bir masa, sakin bir sabah ve verimli bir gün… Bu görüntüler yalnızca bir rutini değil, aynı zamanda ideal bir yaşam fikrini temsil eder.</p>
+                <p style="margin-top:16px;">Ancak bu temsiller yalnızca bireysel tercihler değildir; gündelik hayatın nasıl anlaşılması gerektiğine dair güçlü bir çerçeve oluşturur. Romantize edilmiş günlük rutin içerikleri tam da bu nedenle önemlidir: çünkü onlar, sıradan anların nasıl bir anlam kazandığını gösterir.</p>
+                <p style="margin-top:16px;">Bu yazı, bu içeriklerin neden bu kadar yaygınlaştığını, insanların bu videoları neden ürettiğini ve izleyicilerin bu içeriklerle nasıl bir ilişki kurduğunu incelemektedir. Aynı zamanda bu temsillerin gündelik hayat algımızı nasıl şekillendirdiğini tartışmayı amaçlamaktadır.</p>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:32px 0;">
+                    <div>
+                        <img src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg" style="width:100%; border-radius:4px; object-fit:cover; max-height:220px;" alt="Estetik sabah rutini">
+                        <p style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:8px;">Sosyal medyada sıkça karşılaşılan estetik sabah rutini temsili. <br><span style="color:var(--accent);">Kaynak: pexels.com</span></p>
+                    </div>
+                    <div>
+                        <img src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg" style="width:100%; border-radius:4px; object-fit:cover; max-height:220px;" alt="Gündelik hayat">
+                        <p style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:8px;">Gündelik hayatın yoğun ve pratik deneyimlerine bir örnek. <br><span style="color:var(--accent);">Kaynak: pexels.com</span></p>
+                    </div>
+                </div>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Romantize Edilmiş Günlük Hayatın Yükselişi</h2>
+                <p>Romantize edilmiş günlük hayat içerikleri, sıradan aktivitelerin estetik bir çerçeve içinde sunulmasına dayanır. Kahve hazırlamak, çalışmaya başlamak ya da günün sonunda dinlenmek gibi gündelik eylemler, belirli bir görsel dil ve anlatı yapısıyla yeniden kurgulanır.</p>
+                <p style="margin-top:16px;">Bu anlatı, zamanla yalnızca bir içerik trendi olmaktan çıkar ve belirli bir yaşam standardının temsilcisi haline gelir. Düzenli olmak, üretken olmak ve estetik bir çevrede yaşamak, iyi bir hayatın göstergeleri gibi sunulur. Böylece gündelik hayatın belirli bir versiyonu dijital ortamda daha görünür hale gelirken, diğer deneyimler arka planda kalır.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Gündelik Hayatın Performansa Dönüşmesi</h2>
+                <p>Sosyal medyada günlük rutinlerin paylaşılması, gündelik hayatın yalnızca yaşanan bir deneyim olmaktan çıkıp izlenebilir bir performansa dönüşmesine yol açar. Sabah kahvesi hazırlamak ya da çalışmaya başlamak gibi sıradan eylemler, kamera karşısında sunulduğunda farklı bir anlam kazanır ve gündelik hayat bir anlatıya dönüşür.</p>
+                <p style="margin-top:16px;">Sosyolog Erving Goffman'ın benlik sunumu yaklaşımına göre bireyler sosyal ortamlarda kendilerini belirli bir izlenim yaratacak şekilde sunar (Goffman, 1949). Sosyal medya bu "sahne"yi genişleterek gündelik hayatın bile seçilen ve düzenlenen anlar üzerinden temsil edilmesine olanak tanır.</p>
+                <p style="margin-top:16px;">Bu performatif yapı, gündelik hayatın spontane doğasını da kısmen dönüştürür. Çünkü paylaşılacak anlar çoğu zaman önceden düşünülür, seçilir ve belirli bir estetik içinde sunulur. Böylece gündelik hayat yalnızca yaşanan bir süreç değil, aynı zamanda düzenlenen ve temsil edilen bir deneyim haline gelir.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">İnsanlar Neden Bu İçerikleri Üretiyor?</h2>
+                <p>Bu içeriklerin üretimini anlamak için bireysel motivasyonlara bakmak gerekir. Sosyal medya, bireylerin kendilerini ifade ettiği ve kimliklerini görünür kıldığı bir alan haline gelmiştir. Günlük rutin videoları, bu bağlamda kişinin kendini nasıl görmek istediğini ve nasıl görülmek istediğini yansıtan bir araçtır.</p>
+                <p style="margin-top:16px;">Birçok içerik üreticisi paylaşımlarını ilham verici olarak görür. Sağlıklı alışkanlıklar ya da düzenli bir yaşam tarzı paylaşmak, başkalarına fayda sağlama hissi yaratabilir. Bunun yanı sıra dijital platformların geri bildirim mekanizmaları da üretimi teşvik eder.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sosyal Karşılaştırma ve Duygusal Etkiler</h2>
+                <p>Romantize edilmiş günlük rutin videoları izleyici üzerinde yalnızca estetik bir etki yaratmaz; aynı zamanda karşılaştırma süreçlerini de tetikleyebilir. Sosyal karşılaştırma kuramına göre bireyler, kendi yaşamlarını değerlendirmek için başkalarının deneyimlerini referans alır (Festinger, 1957).</p>
+                <p style="margin-top:16px;">Bu bağlamda romantize edilmiş rutinler, izleyicilere belirli bir yaşam standardı sunar. İzleyiciler bu içerikleri izlerken bazen motive hissedebilir, bazen de kendi hayatlarını bu idealize edilmiş görüntülerle kıyaslayarak yetersizlik duygusu yaşayabilir.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sonuç: Temsil Edilen Hayat ve Yaşanan Hayat</h2>
+                <p>Romantize edilmiş günlük hayat içerikleri, dijital kültürde güçlü bir anlatı oluşturur. İnsanlar bu içerikleri kendilerini ifade etmek, ilham vermek ve görünür olmak için üretir; izleyiciler ise estetik ve duygusal bir deneyim için tüketir.</p>
+                <p style="margin-top:16px;">Ancak bu içeriklerin yaygınlığı, belirli bir yaşam biçiminin norm haline gelmesine katkıda bulunur. Bu nedenle gündelik hayatın dijital temsillerini anlamak, yalnızca içerikleri değil, onların kültürel etkilerini de değerlendirmeyi gerektirir.</p>
+                <p style="margin-top:24px; padding:20px; border-left:3px solid var(--accent); background:rgba(255,212,0,0.05); font-style:italic;">Sosyal medyada gördüğün günlük rutin içerikleri senin günlük hayat algını etkiliyor mu? Bu içerikler sana ilham mı veriyor yoksa kıyaslama yapmana mı neden oluyor?</p>
+
+                <div style="margin-top:48px; padding-top:32px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.8rem; color:rgba(255,255,255,0.35); font-family:'Share Tech Mono',monospace;">
+                    <div style="margin-bottom:8px; color:var(--accent);">KAYNAKÇA</div>
+                    Festinger, L. (1957). Social comparison theory.<br>
+                    Goffman, E. (1949). Presentation of self in everyday life.<br>
+                    Pexels. (n.d.). https://www.pexels.com/tr-tr/
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Overlay 2 -->
+        <div id="blogView2" style="display:none; position:fixed; inset:0; background:#000; z-index:3000; overflow-y:auto;">
+            <div style="padding:30px 50px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:20px; position:sticky; top:0; background:#000; z-index:10;">
+                <span onclick="closeBlog('blogView2')" style="color:var(--accent); cursor:pointer; font-size:1.3rem;"><i class="fas fa-arrow-left"></i> GERİ DÖN</span>
+            </div>
+            <div style="max-width:780px; margin:0 auto; padding:60px 40px; font-family:'Inter',sans-serif; line-height:1.9; font-size:1.05rem; color:rgba(255,255,255,0.85);">
+                <h1 style="font-family:'Share Tech Mono',monospace; font-size:1.8rem; color:#fff; margin-bottom:12px; line-height:1.3; font-weight:normal;">Akışın İçinde Kaybolmak: Sonsuz Kaydırma Deneyimi</h1>
+                <div style="font-size:0.75rem; color:var(--accent); letter-spacing:0.1em; margin-bottom:40px; text-transform:uppercase;">2025 · Sonsuz Kaydırma · Dikkat Ekonomisi · Tasarım</div>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Giriş: Bir Video Nasıl Bir Saate Dönüşüyor?</h2>
+                <p>Kısa video platformlarında zaman çoğu zaman fark edilmeden akıp gider. Başlangıçta yalnızca birkaç dakika geçirmek için açılan bir uygulama, bir bakmışız beklediğimizden çok daha uzun bir süreye dönüşmüş. "Sadece biraz bakacağım" dediğimiz anların nasıl bir saate uzadığını fark etmek zor olabilir.</p>
+                <p style="margin-top:16px;">Bu deneyim çoğumuza tanıdık geliyor. Çünkü sonsuz kaydırma mekanizması, bizi içerikten içeriğe kesintisiz biçimde taşır. Ekranı her aşağı kaydırdığımızda yeni bir içerikle karşılaşırız ve akışın belirli bir sonu yoktur.</p>
+
+                <div style="margin:32px 0; text-align:center;">
+                    <img src="https://images.pexels.com/photos/4549414/pexels-photo-4549414.jpeg" style="width:100%; max-width:500px; border-radius:4px; object-fit:cover; max-height:300px;" alt="TikTok kaydırma">
+                    <p style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:8px;">TikTok'ta otomatik kaydırma özelliğini temsil eden kullanım görseli. <br><span style="color:var(--accent);">Kaynak: pexels.com</span></p>
+                </div>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sonsuz Kaydırma ve Dikkat Ekonomisi</h2>
+                <p>Dijital platformlar için en değerli şey aslında bizim dikkatimizdir. Günümüzde platformların bu dikkati nasıl yönettiği ve ekonomik bir değere dönüştürdüğü sıkça tartışılan bir konu (Sakhanova, 2024).</p>
+                <p style="margin-top:16px;">Sonsuz kaydırma da bu stratejinin en görünür parçalarından biri. Akışın kesintisiz olması, platformdan ayrılmayı zorlaştırırken aynı zamanda sürekli yeni bir şey görme hissini canlı tutar. Bu durumun etik boyutları da tartışılıyor; çünkü kullanıcıların dikkatini mümkün olduğunca uzun süre platformda tutmak, tasarımın temel hedeflerinden biri haline gelmiş durumda (Bhargava & Velasquez, 2021).</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">"Bir Tane Daha" Psikolojisi</h2>
+                <p>Sonsuz kaydırmanın belki de en tanıdık tarafı şu düşünce: "Bir tane daha." Çoğu zaman platformdan çıkmak yerine yalnızca birkaç saniye daha kalmaya karar veririz. Tek başına küçük görünen bu karar, tekrarlandıkça birikimli bir etki yaratır.</p>
+                <p style="margin-top:16px;">Büyük bir zaman harcama kararı vermeyiz; sadece çıkmayı erteleriz. İşte bu küçük ertelemeler, platformda düşündüğümüzden daha uzun kalmamıza neden olur (Bhargava, 2023).</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Alışkanlık Oluşumu ve Bağımlılık Benzeri Kullanım</h2>
+                <p>Zamanla bu kullanım biçimi bir alışkanlığa dönüşebilir. Sürekli yenilenen içerikler, uygulamayı tekrar tekrar kontrol etmemize neden olabilir. Bu tür tasarımlar, davranışın otomatikleşmesine katkıda bulunur (Eyal, 2014).</p>
+                <p style="margin-top:16px;">Bu durum klinik anlamda bir bağımlılık olarak tanımlanmasa da, kullanımın kontrol edilmesinin zorlaşması gibi özellikler gösterebilir. Güncel araştırmalar da sosyal medya kullanımının bağımlılık benzeri örüntüler gösterebildiğini ortaya koyuyor (Balcıoğlu, Bayraktar, & Güven, 2025).</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sonuç: Akışın Mantığını Fark Etmek</h2>
+                <p>Sonsuz kaydırma, sınırsız içerik deneyimi sunarken aynı zamanda doğal durma noktalarını ortadan kaldırır. Bu da platformda geçirilen sürenin fark edilmeden uzamasına neden olabilir.</p>
+                <p style="margin-top:16px;">Bu deneyimi fark etmek, dijital platformlarla kurduğumuz ilişkiyi yeniden düşünmek için iyi bir başlangıç olabilir.</p>
+                <p style="margin-top:24px; padding:20px; border-left:3px solid var(--accent); background:rgba(255,212,0,0.05); font-style:italic;">Sonsuz kaydırma deneyiminde zamanın nasıl geçtiğini fark ediyor musun? Belki de asıl soru şu: Akış gerçekten bitmiyor mu, yoksa biz durmayı mı erteliyoruz?</p>
+
+                <div style="margin-top:48px; padding-top:32px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.8rem; color:rgba(255,255,255,0.35); font-family:'Share Tech Mono',monospace;">
+                    <div style="margin-bottom:8px; color:var(--accent);">KAYNAKÇA</div>
+                    Bhargava, H. K. (2023). Infinite scroll: Addiction by design.<br>
+                    Bhargava, V. R., & Velasquez, M. (2021). Ethics of the attention economy.<br>
+                    Eyal, N. (2014). Hooked: How to build habit-forming products.<br>
+                    Sakhanova, A. (2024). The Attention Economy.<br>
+                    Balcıoğlu, Y. S., Bayraktar, Ü., & Güven, E. (2025). The scrolling paradox.
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Overlay 3 -->
+        <div id="blogView3" style="display:none; position:fixed; inset:0; background:#000; z-index:3000; overflow-y:auto;">
+            <div style="padding:30px 50px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:20px; position:sticky; top:0; background:#000; z-index:10;">
+                <span onclick="closeBlog('blogView3')" style="color:var(--accent); cursor:pointer; font-size:1.3rem;"><i class="fas fa-arrow-left"></i> GERİ DÖN</span>
+            </div>
+            <div style="max-width:780px; margin:0 auto; padding:60px 40px; font-family:'Inter',sans-serif; line-height:1.9; font-size:1.05rem; color:rgba(255,255,255,0.85);">
+                <h1 style="font-family:'Share Tech Mono',monospace; font-size:1.8rem; color:#fff; margin-bottom:12px; line-height:1.3; font-weight:normal;">Sayılarla Ölçülen Değer: Beğeni Kültürü ve Sosyal Onay Mekanizmaları</h1>
+                <div style="font-size:0.75rem; color:var(--accent); letter-spacing:0.1em; margin-bottom:40px; text-transform:uppercase;">2025 · Beğeni Kültürü · Sosyal Onay · Algoritmalar</div>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Giriş: Bir İçeriğin Değeri Sayılarla mı Ölçülür?</h2>
+                <p>Kısa video platformlarında içeriklerle karşılaşma biçimimiz oldukça hızlıdır. Akışta ilerlerken karşımıza çıkan videoları birkaç saniye içinde değerlendirir ve hangisini izleyeceğimize karar veririz. Bu karar her zaman yalnızca içeriğin kendisine dayanmaz. Çoğu zaman videonun altında görünen beğeni, yorum ve görüntülenme sayıları da bu süreçte önemli bir rol oynar.</p>
+                <p style="margin-top:16px;">Bu durum dijital ortamda değerin nasıl algılandığına dair önemli bir ipucu verir. Çünkü sosyal medya platformlarında içerikler yalnızca içerikleriyle değil, aynı zamanda etkileşim metrikleriyle de değerlendirilir.</p>
+
+                <div style="margin:32px 0; text-align:center;">
+                    <img src="https://images.pexels.com/photos/4050315/pexels-photo-4050315.jpeg" style="width:100%; max-width:500px; border-radius:4px; object-fit:cover; max-height:300px;" alt="Sosyal medya beğeni">
+                    <p style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:8px;">Sosyal medya karşılaştırma tuzağını temsil eden görsel. <br><span style="color:var(--accent);">Kaynak: pexels.com</span></p>
+                </div>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sayılar Neden Bu Kadar Önemli?</h2>
+                <p>Sosyal medya platformlarında içerikler çoğu zaman sayılar üzerinden değerlendirilir. Beğeni sayıları, yorumlar ve görüntülenme oranları kullanıcıların içerikleri hızlı bir şekilde karşılaştırmasına yardımcı olur.</p>
+                <p style="margin-top:16px;">Rosenthal-von der Pütten ve ark. (2019) tarafından yapılan bir çalışmada, aynı içerik farklı beğeni sayılarıyla gösterildiğinde kullanıcıların içeriği farklı biçimde değerlendirdiği görülmüştür. Bu bulgu, sayısal metriklerin kullanıcı algısı üzerinde önemli bir etkisi olabileceğini göstermektedir.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sosyal Karşılaştırma: "Benim İçeriğim Kaç Beğeni Eder?"</h2>
+                <p>Beğeni sayılarının açık şekilde görünür olması kullanıcıların kendi içerik performanslarını başkalarıyla karşılaştırmasını kolaylaştırır. Festinger'in (1954) sosyal karşılaştırma teorisine göre insanlar kendi başarılarını ve değerlerini başkalarının performanslarıyla kıyaslayarak değerlendirme eğilimindedir.</p>
+                <p style="margin-top:16px;">Bu karşılaştırma bazen motivasyon sağlayabilir, ancak düşük etkileşim almak kullanıcıların içeriklerinin yeterince ilgi çekmediğini düşünmelerine de neden olabilir.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Beğeniler Bir Ödül Gibi Çalışabilir mi?</h2>
+                <p>Lindström ve ark. (2021) sosyal medya etkileşiminin ödül öğrenmesi süreçleriyle açıklanabileceğini göstermektedir. Araştırmaya göre kullanıcılar paylaşımlarına gelen beğeni ve yorumları sosyal geri bildirim olarak algılar. Bu geri bildirimler zamanla bir tür ödül gibi çalışabilir.</p>
+                <p style="margin-top:16px;">Brown ve ark. (2025) tarafından yapılan bir araştırma ise sosyal medyada daha fazla beğeni alan kullanıcıların kendilerini daha güçlü ve etkili hissedebildiğini göstermektedir.</p>
+
+                <h2 style="font-family:'Share Tech Mono',monospace; font-size:1.1rem; color:var(--accent); margin:36px 0 14px; font-weight:normal;">Sonuç: Sayılar Gerçekten Değeri Gösterir mi?</h2>
+                <p>Kısa video platformlarında sayısal metrikler içeriklerin nasıl algılandığını ve nasıl değerlendirildiğini önemli ölçüde etkileyebilir. Ancak bu sayılar her zaman içeriğin gerçek kalitesini yansıtmayabilir.</p>
+                <p style="margin-top:24px; padding:20px; border-left:3px solid var(--accent); background:rgba(255,212,0,0.05); font-style:italic;">Bir içeriği gerçekten ilgi çekici olduğu için mi izliyoruz, yoksa çoğu zaman sayılar bize neyin değerli olduğunu mu söylüyor?</p>
+
+                <div style="margin-top:48px; padding-top:32px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.8rem; color:rgba(255,255,255,0.35); font-family:'Share Tech Mono',monospace;">
+                    <div style="margin-bottom:8px; color:var(--accent);">KAYNAKÇA</div>
+                    Brown, G. et al. (2025). The Scroll of Approval. Communication Reports.<br>
+                    Festinger, L. (1957). Social comparison theory.<br>
+                    Lindström, B. et al. (2021). A computational reward learning account. Nature Communications.<br>
+                    Rosenthal-von der Pütten, A. M. et al. (2019). "Likes" as social rewards. Computers in Human Behavior.
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function hubFilter(category, btn) {
+                document.querySelectorAll('.hub-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('#portfolyoView .hub-content-section').forEach(section => {
+                    if (category === 'hepsi') {
+                        section.classList.remove('hidden');
+                    } else {
+                        const cats = section.getAttribute('data-hubcat') || '';
+                        cats.includes(category) ? section.classList.remove('hidden') : section.classList.add('hidden');
+                    }
+                });
+            }
+            function scrollToSection(id) {
+                setTimeout(() => {
+                    const el = document.getElementById(id);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+            }
+            function openBlog(id) {
+                document.getElementById(id).style.display = 'block';
+                document.getElementById(id).scrollTop = 0;
+            }
+            function closeBlog(id) {
+                document.getElementById(id).style.display = 'none';
+            }
+        </script>
+
+    </div>
+
+    <div id="contactView" class="overlay-view">
+        <div class="view-back" onclick="toggleView('contactView', false)"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div class="view-content" style="padding-top: 10px;">
+            <h2 style="color: #ffffff; margin-bottom: 40px; font-size: 2.2rem; letter-spacing: 2px;"><span style="color: var(--accent);">></span> BİZE ULAŞIN</h2>
+            <div style="max-width: 550px; text-align: left;">
+                <a href="tel:+905525643935" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 22px; margin-bottom: 28px; padding: 18px; background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); transition: 0.3s; cursor: pointer;" onmouseover="this.style.background='rgba(255,212,0,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fas fa-phone" style="font-size: 2rem; color: var(--accent); min-width: 45px;"></i>
+                    <div>
+                        <div style="font-size: 0.95rem; opacity: 0.6; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff;">TELEFON</div>
+                        <div style="font-size: 1.25rem; color: #ffffff; font-weight: 500;">+90 552 564 3935</div>
+                    </div>
+                </a>
+                
+                <a href="https://www.tiktok.com/@algoritmikcinsiyet?_r=1&_t=ZS-967492B289c" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 22px; margin-bottom: 28px; padding: 18px; background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); transition: 0.3s; cursor: pointer;" onmouseover="this.style.background='rgba(255,212,0,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fab fa-tiktok" style="font-size: 2rem; color: var(--accent); min-width: 45px;"></i>
+                    <div>
+                        <div style="font-size: 0.95rem; opacity: 0.6; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff;">TIKTOK</div>
+                        <div style="font-size: 1.25rem; color: #ffffff; font-weight: 500;">@algoritmikcinsiyet</div>
+                    </div>
+                </a>
+                
+                <a href="https://www.instagram.com/algoritmikcinsiyet?igsh=NTc0M2lhbHQ5bWI1" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 22px; margin-bottom: 28px; padding: 18px; background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); transition: 0.3s; cursor: pointer;" onmouseover="this.style.background='rgba(255,212,0,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fab fa-instagram" style="font-size: 2rem; color: var(--accent); min-width: 45px;"></i>
+                    <div>
+                        <div style="font-size: 0.95rem; opacity: 0.6; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff;">INSTAGRAM</div>
+                        <div style="font-size: 1.25rem; color: #ffffff; font-weight: 500;">@algoritmikcinsiyet</div>
+                    </div>
+                </a>
+                
+                <a href="https://youtube.com/@algoritmikcinsiyet?si=fdtczBiWZzJzDpRI" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 22px; margin-bottom: 28px; padding: 18px; background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); transition: 0.3s; cursor: pointer;" onmouseover="this.style.background='rgba(255,212,0,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fab fa-youtube" style="font-size: 2rem; color: var(--accent); min-width: 45px;"></i>
+                    <div>
+                        <div style="font-size: 0.95rem; opacity: 0.6; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff;">YOUTUBE</div>
+                        <div style="font-size: 1.25rem; color: #ffffff; font-weight: 500;">@AlgoritmikCinsiyet</div>
+                    </div>
+                </a>
+                
+                <a href="mailto:algoritmiksinsiyet@gmail.com" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 22px; margin-bottom: 28px; padding: 18px; background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); transition: 0.3s; cursor: pointer;" onmouseover="this.style.background='rgba(255,212,0,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fas fa-envelope" style="font-size: 2rem; color: var(--accent); min-width: 45px;"></i>
+                    <div>
+                        <div style="font-size: 0.95rem; opacity: 0.6; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff;">E-POSTA</div>
+                        <div style="font-size: 1.25rem; color: #ffffff; font-weight: 500;">algoritmiksinsiyet@gmail.com</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card">
+            <h3 style="color: var(--accent); margin-bottom: 15px;">> YORUM YAP</h3>
+            <textarea id="commentInput" placeholder="Yorumunuz veri havuzuna aktarılacak..."></textarea>
+            <div class="modal-btns" style="display:flex; justify-content:flex-end; gap:10px;">
+                <button class="btn" onclick="closeComment()">İPTAL</button>
+                <button class="btn btn-send" onclick="sendComment()">GÖNDER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nesneleştirme Uyarı Modal -->
+    <div class="modal-overlay" id="nesnelestirmeModal" style="display: none;">
+        <div class="modal-card" style="max-width: 600px; text-align: center; border-color: var(--terminal-red);">
+            <h3 style="color: var(--terminal-red); margin-bottom: 25px; font-size: 1.8rem; letter-spacing: 2px;">⚠ DİKKAT: NESNELEŞTİRME SAPTANDI</h3>
+            <p style="color: var(--fg); line-height: 1.8; font-size: 1.1rem; font-family: 'Inter', sans-serif;">
+                İnsan kimliği devre dışı bırakılıyor. Kişi, sadece dış görünüşten ibaret bir görsel veriye dönüştürülüyor. Sistem zihninizi şekillendiriyor...
+            </p>
+        </div>
+    </div>
+
+    <!-- Cinsiyetçi Mizah Analiz Sayfası -->
+    <div id="analizPageMizah" style="position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto;">
+        <div class="view-back" onclick="closeAnalizPageMizah()" style="position: absolute; top: 30px; left: 30px; z-index: 100; color: var(--accent); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div style="display: flex; height: 100vh; width: 100vw;">
+            <div style="flex: 0.8; background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding-top: 80px;">
+                <video id="analizVideoMizah" loop playsinline style="width: 85%; height: calc(100% - 80px); object-fit: contain;" onclick="toggleAnalizVideo('analizVideoMizah', '')">
+                    <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250497/mizah_jjtarw.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div style="flex: 1.2; background: #0a0a0a; padding: clamp(16px, 4vw, 80px) clamp(16px, 4vw, 50px) 60px clamp(16px, 4vw, 50px); overflow-y: auto;">
+                <h2 style="color: var(--accent); font-size: 2.4rem; margin-bottom: 50px; font-family: 'Space Mono', monospace; letter-spacing: 2px;">İÇERİK ANALİZİ</h2>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Ne İzliyorsun?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Bir erkeğin "Çayın cinsiyeti olsaydı kesin kadın olurdu" diyerek kadınları mizahi bir benzetme üzerinden anlattığı kısa bir sosyal medya videosu. İçerik, espri diliyle ilişki ve kadın davranışları hakkında genelleme yapıyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">İçerik Teması Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Videoda cinsiyetçi mizah öne çıkıyor. Kadınların "hemen soğuyan" kişiler olduğu fikri, çayın hızlı soğumasına benzetilerek mizah malzemesi haline getiriliyor. Günlük bir espri gibi sunulsa da kadın davranışları hakkında kalıplaşmış bir söylem üretiliyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Toplumsal Cinsiyetle İlişkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İçerik, kadınları duygusal olarak tutarsız veya ilgisini hızlı kaybeden kişiler gibi gösteren toplumsal cinsiyet stereotiplerini yeniden üretiyor. Kadın davranışları tek tip bir özellik üzerinden genelleniyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Kullanıcı Üzerindeki Olası Etkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Bu tarz içerikler, cinsiyetçi söylemleri "şaka" formatı içinde normalleştirebilir. İzleyen kişiler kadınlara yönelik kalıp yargıları fark etmeden tekrar etmeye başlayabilir ve bu durum günlük dilde ayrımcı mizahın yayılmasına katkı sağlayabilir.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rol Kalıpları Analiz Sayfası -->
+    <div id="analizPageRolKaliplari" style="position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto;">
+        <div class="view-back" onclick="closeAnalizPageRolKaliplari()" style="position: absolute; top: 30px; left: 30px; z-index: 100; color: var(--accent); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div style="display: flex; height: 100vh; width: 100vw;">
+            <div style="flex: 0.8; background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding-top: 80px;">
+                <video id="analizVideoRolKaliplari" loop playsinline style="width: 85%; height: calc(100% - 80px); object-fit: contain;" onclick="toggleAnalizVideo('analizVideoRolKaliplari', '')">
+                    <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250480/rol_kaliplari_sstvcd.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div style="flex: 1.2; background: #0a0a0a; padding: clamp(16px, 4vw, 80px) clamp(16px, 4vw, 50px) 60px clamp(16px, 4vw, 50px); overflow-y: auto;">
+                <h2 style="color: var(--accent); font-size: 2.4rem; margin-bottom: 50px; font-family: 'Space Mono', monospace; letter-spacing: 2px;">İÇERİK ANALİZİ</h2>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Ne İzliyorsun?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        "A MAN…" akımına ait kısa bir ilişki videosu. Erkek figürü çiçek almak, kapı açmak ve partnerine özel hissettirecek davranışlar yapmak üzerinden ideal partner gibi sunuluyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">İçerik Teması Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Video, romantik ilişkilerde "gerçek erkek" davranışlarını estetik ve duygusal bir şekilde öne çıkarıyor. Küçük jestler, sevginin ve erkekliğin göstergesi gibi sunuluyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Toplumsal Cinsiyetle İlişkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İçerik, erkeklerin ilişkide koruyucu, ilgili ve yön veren taraf olması gerektiği yönündeki geleneksel rol kalıplarını yeniden üretiyor. Kadın ise bu ilginin alıcısı konumunda gösteriliyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Kullanıcı Üzerindeki Olası Etkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İzleyen kişiler ilişkileri belirli romantik davranış kalıpları üzerinden değerlendirmeye başlayabilir. Bu durum, özellikle sosyal medyada "ideal erkek" ve "ideal ilişki" beklentilerini artırabilir.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ev İçi Normlar Analiz Sayfası -->
+    <div id="analizPageEvNorm" style="position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto;">
+        <div class="view-back" onclick="closeAnalizPageEvNorm()" style="position: absolute; top: 30px; left: 30px; z-index: 100; color: var(--accent); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div style="display: flex; height: 100vh; width: 100vw;">
+            <div style="flex: 0.8; background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding-top: 80px;">
+                <video id="analizVideoEvNorm" loop playsinline style="width: 85%; height: calc(100% - 80px); object-fit: contain;">
+                    <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250468/ev-norm_w7mvx4.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div style="flex: 1.2; background: #0a0a0a; padding: clamp(16px, 4vw, 80px) clamp(16px, 4vw, 50px) 60px clamp(16px, 4vw, 50px); overflow-y: auto;">
+                <h2 style="color: var(--accent); font-size: 2.4rem; margin-bottom: 50px; font-family: 'Space Mono', monospace; letter-spacing: 2px;">İÇERİK ANALİZİ</h2>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Ne İzliyorsun?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İlk kez pilav yaptığını söyleyen bir kızın yaptığı yemeği gösterdiği kısa bir sosyal medya videosu. Video, durumu mizahi ve dikkat çekici bir şekilde sunuyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">İçerik Teması Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İçerikte ironi öne çıkıyor. "İlk kez pilav yapan kızın pilavı" ifadesi, kadınların yemek yapmayı zaten biliyor olması gerektiği düşüncesine gönderme yapıyor. Yemek yapamamak şaşırılacak bir durum gibi gösteriliyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Toplumsal Cinsiyetle İlişkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Video, kadınların mutfak işleri konusunda doğal olarak becerili olması gerektiği yönündeki geleneksel toplumsal cinsiyet rollerini yeniden üretiyor. Ev içi sorumluluklar kadın kimliğiyle ilişkilendiriliyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Kullanıcı Üzerindeki Olası Etkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İzleyen kişiler, özellikle kadınların yemek yapmayı bilmesinin zorunlu bir beklenti olduğu fikrini normalleştirebilir. Bu durum ev içi roller üzerindeki toplumsal baskıyı güçlendirebilir.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hiper-Maskülenite Analiz Sayfası -->
+    <div id="analizPageErkeklik" style="position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto;">
+        <div class="view-back" onclick="closeAnalizPageErkeklik()" style="position: absolute; top: 30px; left: 30px; z-index: 100; color: var(--accent); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div style="display: flex; height: 100vh; width: 100vw;">
+            <div style="flex: 0.8; background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding-top: 80px;">
+                <video id="analizVideoErkeklik" loop playsinline style="width: 85%; height: calc(100% - 80px); object-fit: contain;" onclick="toggleAnalizVideo('analizVideoErkeklik', '')">
+                    <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250468/erkeklik_el3tsw.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div style="flex: 1.2; background: #0a0a0a; padding: clamp(16px, 4vw, 80px) clamp(16px, 4vw, 50px) 60px clamp(16px, 4vw, 50px); overflow-y: auto;">
+                <h2 style="color: var(--accent); font-size: 2.4rem; margin-bottom: 50px; font-family: 'Space Mono', monospace; letter-spacing: 2px;">İÇERİK ANALİZİ</h2>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Ne İzliyorsun?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Bir erkeğin büyük biceps ve kaslı görünümü öne çıkararak "erkek adama böyle fizik yakışır" fikrini sunduğu kısa bir sosyal medya videosu.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">İçerik Teması Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Video, erkek bedenini kas gücü üzerinden idealize ediyor. Özellikle büyük kol ve fit görünüm, daha çekici ve daha "gerçek erkek" olmanın göstergesi gibi sunuluyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Toplumsal Cinsiyetle İlişkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İçerik, erkeklerin güçlü, kaslı ve fiziksel olarak etkileyici olması gerektiği yönündeki toplumsal beklentileri yeniden üretiyor. Erkeklik, beden gücü ve görünüş üzerinden tanımlanıyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Kullanıcı Üzerindeki Olası Etkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İzleyen kişiler kendi bedenini bu görüntüyle kıyaslayabilir. Bu durum özellikle genç erkeklerde yetersizlik hissi, kaslı görünme baskısı ve dış görünüşü erkekliğin temel ölçüsü gibi algılama etkisi oluşturabilir.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Güzellik Söylemi Analiz Sayfası -->
+    <div id="analizPageGuzellik" style="position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto;">
+        <div class="view-back" onclick="closeAnalizPageGuzellik()" style="position: absolute; top: 30px; left: 30px; z-index: 100; color: var(--accent); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div style="display: flex; height: 100vh; width: 100vw;">
+            <div style="flex: 0.8; background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding-top: 80px;">
+                <video id="analizVideoGuzellik" loop playsinline style="width: 85%; height: calc(100% - 80px); object-fit: contain;" onclick="toggleAnalizVideo('analizVideoGuzellik', 'pauseBtnGuzellik')">
+                    <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250467/g%C3%BCzellik_wsdy6j.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div style="flex: 1.2; background: #0a0a0a; padding: clamp(16px, 4vw, 80px) clamp(16px, 4vw, 50px) 60px clamp(16px, 4vw, 50px); overflow-y: auto;">
+                <h2 style="color: var(--accent); font-size: 2.4rem; margin-bottom: 50px; font-family: 'Space Mono', monospace; letter-spacing: 2px;">İÇERİK ANALİZİ</h2>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Ne İzliyorsun?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Bir kişinin makyaj, saç düzenlemesi ve filtre/açı kullanımıyla "öncesi → sonrası" dönüşümünü gösteren kısa bir sosyal medya videosu. Video, doğal görünümden "kusursuz/göz alıcı" görünüme geçişi estetik bir başarı gibi sunuyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">İçerik Teması Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        İçeriğin merkezinde güzelliğin "inşa edilebilir" bir şey olduğu fikri var. Kamera, ışık, makyaj ve saç üzerinden belirli bir yüz görünümü "ideal hal" gibi gösteriliyor. Doğal görünüm başlangıç noktası olurken, son görünüm daha değerli ve daha kabul edilebilir bir versiyon olarak sunuluyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Toplumsal Cinsiyetle İlişkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Kadın görünümü burada sosyal bir performans haline geliyor. Güzel görünmek sadece kişisel tercih değil; beğenilmek, dikkat çekmek ve sosyal onay almakla ilişkilendiriliyor. İçerik, kadınların sürekli "daha düzgün", "daha çekici" ve "daha kusursuz" görünmesi gerektiği yönündeki toplumsal beklentileri yeniden üretiyor.
+                    </p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Kullanıcı Üzerindeki Olası Etkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Videoyu izleyen kişiler kendi doğal görünümünü yetersiz hissetmeye başlayabilir. Özellikle genç kullanıcılar, ekrandaki son görünümü "normal" ya da ulaşılması gereken standart gibi algılayabiliyor. Bu durum: özgüven baskısı, sürekli kendini düzeltme ihtiyacı, filtreli/makyajlı görünümü gerçeklik sanma, dış görünüşü kişisel değerin merkezine koyma gibi etkiler oluşturabiliyor.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analiz Sayfası -->
+    <div id="analizPage" style="position: fixed; inset: 0; background: #000; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); overflow-y: auto;">
+        <div class="view-back" onclick="closeAnalizPage()" style="position: absolute; top: 30px; left: 30px; z-index: 100; color: var(--accent); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-arrow-left"></i> GERİ DÖN</div>
+        <div style="display: flex; height: 100vh; width: 100vw;">
+            <div style="flex: 0.8; background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding-top: 80px;">
+                <video id="analizVideo" loop playsinline style="width: 85%; height: calc(100% - 80px); object-fit: contain;" onclick="toggleAnalizVideo('analizVideo', 'pauseBtnNesnelestirme')">
+                    <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250481/nesnele%C5%9Ftirme_guyahy.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <!-- Sağ Taraf - Analiz -->
+            <div style="flex: 1.2; background: #0a0a0a; padding: clamp(16px, 4vw, 80px) clamp(16px, 4vw, 50px) 60px clamp(16px, 4vw, 50px); overflow-y: auto;">
+                <h2 style="color: var(--accent); font-size: 2.4rem; margin-bottom: 50px; font-family: 'Space Mono', monospace; letter-spacing: 2px;">İÇERİK ANALİZİ</h2>
+
+                <!-- Ne İzliyorsun -->
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Ne İzliyorsun?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Bir motorun tasarımı üzerinden "ideal kadın vücudu" (90-60-90) tarifi.
+                    </p>
+                </div>
+
+                <!-- İçerik Teması -->
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">İçerik Teması Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Kadın bedeni bir insan gibi değil, sanki galerideki bir motor veya eşya gibi sergileniyor. İnsan vücudu bir "makine" yerine konuluyor.
+                    </p>
+                </div>
+
+                <!-- Toplumsal Cinsiyetle İlişkisi -->
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Toplumsal Cinsiyetle İlişkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Kadın; "binilen", "bakılan" ve belli ölçülere uyması gereken bir nesneye dönüştürülüyor. Bu durum, kadını bir birey olmaktan çıkarıp, başkalarının kontrolündeki bir "mülk" seviyesine indiriyor.
+                    </p>
+                </div>
+
+                <!-- Kullanıcı Üzerindeki Olası Etkisi -->
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Kullanıcı Üzerindeki Olası Etkisi Nedir?</h3>
+                    <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.9; text-align: justify;">
+                        Ekrana bakarken kadınları bir insan olarak değil, rakamlardan ve parçalardan oluşan bir "ürün" gibi görmene sebep oluyor. Eğer o rakamlara (90-60-90) sahip değilsen, kendini "bozuk bir parça" gibi hissetmeni sağlıyor.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="warningModal" style="background: rgba(0,0,0,0.95);">
+        <div style="background: #000; padding: 50px; border: 3px solid var(--terminal-red); max-width: 700px; text-align: center;">
+            <h2 style="color: var(--terminal-red); font-size: 2.5rem; margin-bottom: 30px; letter-spacing: 3px; text-transform: uppercase;">⚠ DİKKAT ⚠</h2>
+            <div style="background: rgba(255,59,59,0.1); padding: 30px; border: 1px solid var(--terminal-red); margin-bottom: 20px;">
+                <p style="color: var(--fg); font-size: 1.3rem; line-height: 1.8; font-family: 'Inter', sans-serif;">
+                    <strong style="color: var(--terminal-red);">NESNELEŞTİRME SAPTANDI.</strong><br><br>
+                    İnsan kimliği devre dışı bırakılıyor. Kişi, sadece dış görünüşten ibaret bir görsel veriye dönüştürülüyor.<br><br>
+                    <strong style="color: var(--accent);">Sistem zihninizi şekillendiriyor...</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="feed-container" id="feed">
+        <section class="slide splash-slide" id="start-page">
+            <div class="terminal-header">ALGORİTMİK_CİNSİYET</div>
+            <div class="terminal-logs">
+                <p>> KULLANICI KİMLİĞİ TESPİT EDİLİYOR...</p>
+                <p>> SOSYAL NORMLAR YÜKLENİYOR...</p>
+                <p class="error-text">> HATA: CİNSİYET BULUNAMADI.</p>
+            </div>
+            <div class="warning-box">⚠<br>UYARI: BU AKIŞ BİR SİMÜLASYONDUR. KALIPLAR ALGORİTMALAR TARAFINDAN ÜRETİLMİŞTİR.</div>
+            <div class="swipe-hint">BAŞLAMAK İÇİN KAYDIR<br><i class="fas fa-chevron-down"></i></div>
+        </section>
+
+        <section class="slide" data-theme="beauty">
+            <video class="video-background" loop playsinline autoplay>
+                <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250469/g%C3%BCzelliks%C3%B6ylemi_xtr7hv.mp4" type="video/mp4">
+                Tarayıcınız video oynatmayı desteklemiyor.
+            </video>
+            <div class="top-tabs">
+                <div class="tab-item" onclick="switchTab('kesfet')">Keşfet</div>
+                
+                <div class="tab-item" onclick="switchTab('sizinIcin')">Sizin İçin</div>
+            </div>
+            <div class="bg-overlay theme-beauty"></div>
+            <div class="post-meta">
+                <span class="user-tag">@pixel_kusursuzlugu</span>
+                <p class="caption-text">"Bu makyaj 'seni' değil, algoritmanın beğendiği 'versiyonunu' yaratıyor. Beğen tuşuna basarken kimin için güzelleştiğini düşün."</p>
+            </div>
+            <div class="interaction-rail">
+                <div class="action-btn" onclick="handleLike(this)"><i class="fas fa-heart"></i><small>Beğen</small></div>
+                <div class="action-btn" onclick="openComment()"><i class="fas fa-comment"></i><small>Yorum</small></div>
+                <div class="action-btn" onclick="showOverlay('Kaydedildi ama büyük ihtimalle geri dönmeyeceksin.')"><i class="fas fa-bookmark"></i><small>Kaydet</small></div>
+                <div class="action-btn" onclick="showOverlay('Paylaşıldı. Bu içerik senin gibi profillere önerilecek.')"><i class="fas fa-share"></i><small>Paylaş</small></div>
+            </div>
+        </section>
+
+        <section class="slide" data-theme="masc">
+            <video class="video-background" loop playsinline autoplay>
+                <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250480/hipermask%C3%BClenlik_bykgjk.mp4" type="video/mp4">
+                Tarayıcınız video oynatmayı desteklemiyor.
+            </video>
+            <div class="top-tabs">
+                <div class="tab-item" onclick="switchTab('kesfet')">Keşfet</div>
+                
+                <div class="tab-item" onclick="switchTab('sizinIcin')">Sizin İçin</div>
+            </div>
+            <div class="bg-overlay theme-masc"></div>
+            <div class="post-meta">
+                <span class="user-tag">@erkekligin_dersi</span>
+                <p class="caption-text">"Başarı, acımasızlık ve yalnızlık mı? Algoritma sana 'güçlü' olmanın bedelini fısıldıyor. Bu sen misin, yoksa sana biçilen rol mü?"</p>
+            </div>
+            <div class="interaction-rail">
+                <div class="action-btn" onclick="handleLike(this)"><i class="fas fa-heart"></i><small>Beğen</small></div>
+                <div class="action-btn" onclick="openComment()"><i class="fas fa-comment"></i><small>Yorum</small></div>
+                <div class="action-btn" onclick="showOverlay('Kaydedildi ama büyük ihtimalle geri dönmeyeceksin.')"><i class="fas fa-bookmark"></i><small>Kaydet</small></div>
+                <div class="action-btn" onclick="showOverlay('Paylaşıldı. Bu içerik senin gibi profillere önerilecek.')"><i class="fas fa-share"></i><small>Paylaş</small></div>
+            </div>
+        </section>
+
+        <section class="slide" data-theme="home">
+            <video class="video-background" loop playsinline autoplay>
+                <source src="https://res.cloudinary.com/dk4jowphb/video/upload/v1778250467/evicinnormlar_fizajr.mp4" type="video/mp4">
+                Tarayıcınız video oynatmayı desteklemiyor.
+            </video>
+            <div class="top-tabs">
+                <div class="tab-item" onclick="switchTab('kesfet')">Keşfet</div>
+                
+                <div class="tab-item" onclick="switchTab('sizinIcin')">Sizin İçin</div>
+            </div>
+            <div class="bg-overlay theme-home"></div>
+            <div class="post-meta">
+                <span class="user-tag">@evcil_mutluluk</span>
+                <p class="caption-text">"Modern kölelik mi, çağdaş mutluluk mu? Algoritma sana "yuva kurmanın" tek yolunu gösteriyor. Seçim senin mi, algoritmanın mı?"</p>
+            </div>
+            <div class="interaction-rail">
+                <div class="action-btn" onclick="handleLike(this)"><i class="fas fa-heart"></i><small>Beğen</small></div>
+                <div class="action-btn" onclick="openComment()"><i class="fas fa-comment"></i><small>Yorum</small></div>
+                <div class="action-btn" onclick="showOverlay('Kaydedildi ama büyük ihtimalle geri dönmeyeceksin.')"><i class="fas fa-bookmark"></i><small>Kaydet</small></div>
+                <div class="action-btn" onclick="showOverlay('Paylaşıldı. Bu içerik senin gibi profillere önerilecek.')"><i class="fas fa-share"></i><small>Paylaş</small></div>
+            </div>
+        </section>
+    </div>
+
+    <div class="bottom-analysis">
+        <div id="meterSection">
+            <div class="meter-info">
+                <span>> ALGORİTMİK_KİMLİK_ANALİZİ</span>
+                <span id="knowPct">0% TANIMLANDI</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+        </div>
+        <div class="simple-nav">
+            <div class="nav-btn" onclick="goHome()"><i class="fas fa-home"></i>Ana Sayfa</div>
+            <div class="nav-btn" onclick="toggleView('contactView', true)"><i class="fas fa-envelope"></i>İletişim</div>
+            <div class="nav-btn" onclick="toggleView('profileView', true)"><i class="fas fa-user"></i>Profil</div>
+            <div class="nav-btn" onclick="toggleView('portfolyoView', true)"><i class="fas fa-folder"></i>Portfolyo</div>
+        </div>
+    </div>
+
+    <!-- %100 Tamamlanma Modal -->
+    <div class="modal-overlay" id="completionModal" style="display: none;">
+        <div class="modal-card" style="max-width: 700px; text-align: center; border-color: var(--accent); padding: 40px;">
+            <h3 style="color: var(--accent); margin-bottom: 25px; font-size: 1.6rem; letter-spacing: 2px; font-family: 'Space Mono', monospace;">%100 TAMAMLANDI</h3>
+            <p style="color: var(--fg); line-height: 1.9; font-size: 1.15rem; font-family: 'Inter', sans-serif; opacity: 0.95;">
+                Algoritma ile tam uyum sağlandı. Bireysel sorgulama devredışı. Sistem, bilincinizi kendi kurgusuyla değiştirdi.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const state = { likes: 0, watchTime: 0, themes: { beauty: 0, masc: 0, home: 0 }, completionShown: false };
+        const feed = document.getElementById('feed');
+
+        // Video otomatik oynatma için
+        document.addEventListener('DOMContentLoaded', function() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                // Ana sayfa videoları sessiz kalmalı
+                video.play().catch(e => console.log('Video autoplay prevented:', e));
+            });
+        });
+
+        // Scroll ile video sayfasında mı kontrol et
+        // ===== SES YÖNETİMİ =====
+        // Sesi Etkinleştir butonu
+        const soundBtn = document.createElement('div');
+        soundBtn.id = 'soundBtn';
+        soundBtn.innerHTML = '🔇 Sesi Etkinleştir';
+        soundBtn.style.cssText = 'position:fixed; bottom:130px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:var(--accent); border:1px solid var(--accent); padding:10px 24px; border-radius:4px; font-family:"Space Mono",monospace; font-size:0.8rem; cursor:pointer; z-index:9999; letter-spacing:0.05em; transition:opacity 0.3s;';
+        document.body.appendChild(soundBtn);
+
+        soundBtn.addEventListener('click', function() {
+            const videos = document.querySelectorAll('.video-background');
+            videos.forEach(v => {
+                const rect = v.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    v.muted = false;
+                    v.volume = 1.0;
+                    v.play().catch(() => {});
+                }
+            });
+            soundBtn.style.opacity = '0';
+            setTimeout(() => soundBtn.style.display = 'none', 300);
+        });
+
+        // Sadece ilk video sayfasındayken görünsün (ana sayfa değil, overlay da değil)
+        setInterval(() => {
+            const btn = document.getElementById('soundBtn');
+            if (!btn) return;
+            const anyOverlay = document.querySelector('.overlay-view.active');
+            const scrollTop = feed.scrollTop;
+            const onSplash = scrollTop < window.innerHeight * 0.5;
+            btn.style.display = (!anyOverlay && !onSplash) ? 'block' : 'none';
+        }, 300);
+        feed.addEventListener('scroll', function() {
+            const anyOverlay = document.querySelector('.overlay-view.active');
+            if (anyOverlay) return; // Overlay açıksa ana sayfa videolarına dokunma
+
+            document.querySelectorAll('.video-background').forEach(video => {
+                const rect = video.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                if (isVisible) {
+                    video.muted = false;
+                    video.volume = 1.0;
+                    video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+                } else {
+                    video.pause();
+                    video.volume = 0;
+                }
+            });
+        });
+
+        function switchTab(tab) {
+            const currentSlide = document.querySelector('.slide:not(.splash-slide)');
+            const tabs = currentSlide.querySelectorAll('.tab-item');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Keşfet'e tıklanınca overlay aç ve videoları sustur
+            if(tab === 'kesfet') {
+                toggleView('kesfetView', true);
+            }
+            
+            // Sizin İçin'e tıklanınca AKIŞINI DÜZENLE sayfasını aç
+            if(tab === 'sizinIcin') {
+                toggleView('akisGuideView', true);
+            }
+        }
+
+        function toggleView(id, show) {
+            const el = document.getElementById(id);
+            
+            if(show) {
+                document.querySelectorAll('.overlay-view').forEach(v => v.classList.remove('active'));
+                el.classList.add('active');
+
+                // Tüm videoları durdur
+                document.querySelectorAll('video').forEach(v => {
+                    v.pause();
+                    v.muted = true;
+                    v.volume = 0;
+                });
+                
+                // Portfolyo açılıyorsa reels videolarını oynat ve Instagram embed'ini yenile
+                if(id === 'portfolyoView') {
+                    setTimeout(() => {
+                        ['reels1','reels2','reels3','reels4'].forEach(rid => {
+                            const rv = document.getElementById(rid);
+                            if (rv) { rv.muted = true; rv.play().catch(() => {}); }
+                        });
+                    }, 300);
+                    // Instagram blockquote'larını yeniden clone'la
+                    setTimeout(() => {
+                        document.querySelectorAll('#portfolyoView blockquote.instagram-media').forEach(bq => {
+                            const parent = bq.parentNode;
+                            const clone = bq.cloneNode(true);
+                            parent.replaceChild(clone, bq);
+                        });
+                        // Script yeniden yükle
+                        const oldScript = document.querySelector('head script[src*="embed.js"]');
+                        if (oldScript) oldScript.remove();
+                        const newScript = document.createElement('script');
+                        newScript.src = '//www.instagram.com/embed.js';
+                        newScript.async = true;
+                        document.head.appendChild(newScript);
+                    }, 400);
+                }
+
+                // Keşfet açılıyorsa, keşfet videolarını sessiz oynat
+                if(id === 'kesfetView') {
+                    setTimeout(() => {
+                        document.querySelectorAll('#kesfetView video').forEach(v => {
+                            v.muted = true;
+                            v.play().catch(() => {});
+                        });
+                    }, 100);
+                }
+            } else {
+                el.classList.remove('active');
+                document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+
+                // Tüm analiz videolarını durdur
+                ['analizVideoGuzellik','analizVideo','analizVideoErkeklik','analizVideoEvNorm','analizVideoRolKaliplari','analizVideoMizah'].forEach(aid => {
+                    const av = document.getElementById(aid);
+                    if (av) { av.pause(); av.muted = true; av.currentTime = 0; }
+                });
+                ['analizPageGuzellik','analizPage','analizPageErkeklik','analizPageEvNorm','analizPageRolKaliplari','analizPageMizah'].forEach(pid => {
+                    const p = document.getElementById(pid);
+                    if (p) p.style.transform = 'translateX(100%)';
+                });
+
+                // Görünür ana sayfa videosunu sesli başlat
+                document.querySelectorAll('.video-background').forEach(v => {
+                    const rect = v.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                    if (isVisible) {
+                        v.muted = false;
+                        v.volume = 1.0;
+                        v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+                    }
+                });
+            }
+        }
+
+        function goHome() {
+            document.querySelectorAll('.overlay-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('start-page').scrollIntoView({ behavior: 'smooth' });
+            // Tüm analiz sayfalarını kapat ve seslerini kes
+            ['analizVideoGuzellik','analizVideo','analizVideoErkeklik','analizVideoEvNorm','analizVideoRolKaliplari','analizVideoMizah'].forEach(id => {
+                const v = document.getElementById(id);
+                if (v) { v.pause(); v.muted = true; v.currentTime = 0; }
+            });
+            ['analizPageGuzellik','analizPage','analizPageErkeklik','analizPageEvNorm','analizPageRolKaliplari','analizPageMizah'].forEach(id => {
+                const p = document.getElementById(id);
+                if (p) p.style.transform = 'translateX(100%)';
+            });
+        }
+
+        function showOverlay(html) {
+            const overlay = document.getElementById('overlay');
+            document.getElementById('overlayText').innerHTML = html;
+            overlay.style.display = 'block';
+            clearTimeout(window.tTimer);
+            window.tTimer = setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+        }
+
+        function updateMeter() {
+            const themeScore = state.themes.beauty + state.themes.masc + state.themes.home;
+            const score = Math.min(state.likes * 8 + Math.floor(state.watchTime / 1.5) + themeScore, 100);
+            document.getElementById('knowPct').innerText = score + '% TANIMLANDI';
+            document.getElementById('fill').style.width = score + '%';
+            
+            // %100'e ulaşınca
+            if (score === 100 && !state.completionShown) {
+                state.completionShown = true;
+                showCompletionMessage();
+                
+                // 4 saniye sonra sadece ölçer bölümünü kaldır
+                setTimeout(() => {
+                    document.getElementById('meterSection').style.display = 'none';
+                }, 4000);
+            }
+        }
+        
+        // Tamamlanma mesajı göster
+        function showCompletionMessage() {
+            const modal = document.getElementById('completionModal');
+            modal.style.display = 'flex';
+            
+            // 4 saniye sonra kapat
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 4000);
+        }
+
+        function bumpTheme(theme) { state.themes[theme] += 10; updateMeter(); }
+
+        function handleLike(btn) {
+            const icon = btn.querySelector('i');
+            const currentSlide = btn.closest('.slide');
+            const theme = currentSlide.getAttribute('data-theme');
+            if(!icon.classList.contains('liked')) {
+                state.likes++;
+                icon.classList.add('liked');
+                updateMeter();
+                if(theme) bumpTheme(theme);
+                if(state.likes === 1) showOverlay("Beğeni kaydedildi. <strong>Bu bir tercih değil, bir sinyal.</strong>");
+                else if(state.likes === 2) showOverlay("3 beğeni → daha fazla benzer içerik. <strong>Tekrar döngüsü</strong> böyle başlar.");
+                else if(state.likes === 3) showOverlay("Beğeni arttıkça akış daralır. <strong>Yankı odası</strong> daha rahat kurulur.");
+            } else icon.classList.remove('liked');
+        }
+
+        function openComment() { document.getElementById('modal').style.display = 'flex'; }
+        function closeComment() { document.getElementById('modal').style.display = 'none'; }
+        function sendComment() { closeComment(); showOverlay("Yorum kaydedildi. Önemli olan ne yazdığın değil, <strong>burada geçirdiğin süre.</strong>"); updateMeter(); }
+
+        // Keşfet video tıklama fonksiyonu
+        function kesfetVideoClick(videoNumber) {
+            console.log('Keşfet video clicked:', videoNumber);
+            // Burada ne olacağını sonra ekleyeceğiz
+            showOverlay('Video ' + videoNumber + ' tıklandı!');
+        }
+
+        // Nesneleştirme uyarısı
+        function toggleAnalizVideo(videoId, btnId) {
+            const video = document.getElementById(videoId);
+            const btn = document.getElementById(btnId);
+            if (video.paused) {
+                video.play();
+                btn.innerHTML = '⏸ DURAKLAT';
+            } else {
+                video.pause();
+                btn.innerHTML = '▶ OYNAT';
+            }
+        }
+
+        function openAnalizPageMizah() {
+            document.getElementById('analizPageMizah').style.transform = 'translateX(0)';
+            const video = document.getElementById('analizVideoMizah');
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+        }
+        function closeAnalizPageMizah() {
+            document.getElementById('analizPageMizah').style.transform = 'translateX(100%)';
+            const video = document.getElementById('analizVideoMizah');
+            video.pause();
+            video.muted = true;
+            video.currentTime = 0;
+        }
+
+        function openAnalizPageRolKaliplari() {
+            document.getElementById('analizPageRolKaliplari').style.transform = 'translateX(0)';
+            const video = document.getElementById('analizVideoRolKaliplari');
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+        }
+        function closeAnalizPageRolKaliplari() {
+            document.getElementById('analizPageRolKaliplari').style.transform = 'translateX(100%)';
+            const video = document.getElementById('analizVideoRolKaliplari');
+            video.pause();
+            video.muted = true;
+            video.currentTime = 0;
+        }
+
+        function openAnalizPageEvNorm() {
+            document.getElementById('analizPageEvNorm').style.transform = 'translateX(0)';
+            const video = document.getElementById('analizVideoEvNorm');
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+        }
+        function closeAnalizPageEvNorm() {
+            document.getElementById('analizPageEvNorm').style.transform = 'translateX(100%)';
+            const video = document.getElementById('analizVideoEvNorm');
+            video.pause();
+            video.muted = true;
+            video.currentTime = 0;
+        }
+
+        function openAnalizPageErkeklik() {
+            document.getElementById('analizPageErkeklik').style.transform = 'translateX(0)';
+            const video = document.getElementById('analizVideoErkeklik');
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+        }
+        function closeAnalizPageErkeklik() {
+            document.getElementById('analizPageErkeklik').style.transform = 'translateX(100%)';
+            const video = document.getElementById('analizVideoErkeklik');
+            video.pause();
+            video.muted = true;
+            video.currentTime = 0;
+        }
+
+        function openAnalizPageGuzellik() {
+            document.getElementById('analizPageGuzellik').style.transform = 'translateX(0)';
+            const video = document.getElementById('analizVideoGuzellik');
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+            document.getElementById('pauseBtnGuzellik').innerHTML = '⏸ DURAKLAT';
+        }
+        function closeAnalizPageGuzellik() {
+            document.getElementById('analizPageGuzellik').style.transform = 'translateX(100%)';
+            const video = document.getElementById('analizVideoGuzellik');
+            video.pause();
+            video.muted = true;
+            video.currentTime = 0;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                const guzellikPage = document.getElementById('analizPageGuzellik');
+                const erkeklikPage = document.getElementById('analizPageErkeklik');
+                const evNormPage = document.getElementById('analizPageEvNorm');
+                const rolKaliplariPage = document.getElementById('analizPageRolKaliplari');
+                const mizahPage = document.getElementById('analizPageMizah');
+                if (guzellikPage.style.transform === 'translateX(0px)' || guzellikPage.style.transform === 'translateX(0)') {
+                    e.preventDefault(); toggleAnalizVideo('analizVideoGuzellik', '');
+                } else if (erkeklikPage.style.transform === 'translateX(0px)' || erkeklikPage.style.transform === 'translateX(0)') {
+                    e.preventDefault(); toggleAnalizVideo('analizVideoErkeklik', '');
+                } else if (evNormPage.style.transform === 'translateX(0px)' || evNormPage.style.transform === 'translateX(0)') {
+                    e.preventDefault(); toggleAnalizVideo('analizVideoEvNorm', '');
+                } else if (rolKaliplariPage.style.transform === 'translateX(0px)' || rolKaliplariPage.style.transform === 'translateX(0)') {
+                    e.preventDefault(); toggleAnalizVideo('analizVideoRolKaliplari', '');
+                } else if (mizahPage.style.transform === 'translateX(0px)' || mizahPage.style.transform === 'translateX(0)') {
+                    e.preventDefault(); toggleAnalizVideo('analizVideoMizah', '');
+                }
+            }
+        });
+
+        function openNesnelestirmeWarning() {
+            const modal = document.getElementById('nesnelestirmeModal');
+            modal.style.display = 'flex';
+            
+            // 4 saniye sonra analiz sayfasına geç
+            setTimeout(() => {
+                modal.style.display = 'none';
+                openAnalizPage();
+            }, 4000);
+        }
+
+        // Analiz sayfasını aç
+        function openAnalizPage() {
+            const analizPage = document.getElementById('analizPage');
+            const analizVideo = document.getElementById('analizVideo');
+            analizPage.style.transform = 'translateX(0)';
+            analizVideo.muted = false;
+            analizVideo.volume = 1.0;
+            analizVideo.play().catch(() => {});
+            document.getElementById('pauseBtnNesnelestirme').innerHTML = '⏸ DURAKLAT';
+        }
+
+        function closeAnalizPage() {
+            const analizPage = document.getElementById('analizPage');
+            const analizVideo = document.getElementById('analizVideo');
+            analizPage.style.transform = 'translateX(100%)';
+            analizVideo.pause();
+            analizVideo.muted = true;
+            analizVideo.currentTime = 0;
+        }
+
+        // Space tuşu ile analiz videosunu durdur/oynat
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                
+                const analizPage = document.getElementById('analizPage');
+                const analizVideo = document.getElementById('analizVideo');
+                
+                // Analiz sayfası açık mı kontrol et (computed style ile)
+                const computedTransform = window.getComputedStyle(analizPage).transform;
+                const isAnalizOpen = computedTransform === 'matrix(1, 0, 0, 1, 0, 0)' || analizPage.style.transform === 'translateX(0)' || analizPage.style.transform === 'translateX(0px)';
+                
+                if (isAnalizOpen) {
+                    // Analiz sayfası açıksa, sadece analiz videosunu kontrol et
+                    if (analizVideo.paused) {
+                        analizVideo.play();
+                    } else {
+                        analizVideo.pause();
+                    }
+                } else {
+                    // Ana sayfa videoları için kontrol
+                    const videos = document.querySelectorAll('.video-background');
+                    videos.forEach(video => {
+                        if (video.paused) {
+                            video.play();
+                        } else {
+                            video.pause();
+                        }
+                    });
+                }
+            }
+        });
+
+        setInterval(() => { if(feed.scrollTop > 100) { state.watchTime++; updateMeter(); } }, 1000);
+    </script>
+</body>
+</html>
